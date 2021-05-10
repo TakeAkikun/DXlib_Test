@@ -36,105 +36,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return -1;			    // エラーが起きたら直ちに終了
 	}
 
-
-
-	//円の位置を決める
-	int X = GAME_WIDTH / 2;
-	int Y = GAME_HEIGHT / 2;
-
-	//四角形の大きさを決める
-	int width = 10;
-	int height = 10;
-
-	//円の半径を決める
-	int radius = 25;
-
-	//動く速度を決める
-	int Xspead = 1;
-	int Yspead = 1;
-
-	//スピードアップする回数を決める
-	int Scount = 3;  //縦横計3回
-
-	//
+	//ダブルバッファリング有効化
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	
 	//無限ループ
 	while (1)
 	{
-		                        //何かしらキーが押されたらループを抜ける
-		if (CheckHitKeyAll() != 0)
-		{
-			break;
-		}
-		                        //メッセージを受け取り続ける
-		if (ProcessMessage() != 0) 
-		{
-			break;              //エラーやウィンドウが閉じられたらループを抜ける
-		}
-
-		//画面をクリア
-		if (ClearDrawScreen() != 0) { break; }
-
-		//四角形を描く
-		//DrawBox(
-		//	X, Y, X + width, Y + height,
-		//	GetColor(255, 0, 0),
-		//	TRUE                //塗りつぶすかどうか
-		//);
-
-		//円を描く
-		DrawCircle(
-			X, Y, radius,
-			GetColor(0, 255, 0),
-			FALSE,5
-		);
-
-			X += Xspead;         //四角形を右下に動かす
-			Y += Yspead;
-
-			if (X - radius < 0 || X > GAME_WIDTH - radius)
-			{
-				Xspead = -Xspead;
-
-				if (Scount > 0)
-				{
-					if (Xspead > 0) { Xspead += 2; }
-					else if (Xspead < 0) { Xspead -= 2; }
-					Scount--;
-				}
-			}
-		
-			if (Y - radius < 0 || Y > GAME_HEIGHT - radius)
-			{
-				Yspead = -Yspead;
-
-				if (Scount > 0)
-				{
-					if (Yspead > 0) { Yspead += 2; }
-					else if (Yspead < 0) { Yspead -= 2; }
-					Scount--;
-				}
-			}
-
-		/*
-		if (X <= 250 && Y <= 250)
-		{
-			X++;                 //四角形を右下に動かす
-			Y++;
-		}
-
-		if (X > 250 || Y > 250)
-		{
-			X++;
-			if (Y > 150 && Y < 350)
-			{
-				Y--;
-			}
-			
-		}
-		*/
+	    
+		if (ProcessMessage() != 0) { break; }  //メッセージを受け取り続ける
+		if (ClearDrawScreen() != 0) { break; } //画面をクリア
 
 		ScreenFlip();           //ダブルバッファリングした画面を描画
 	}
