@@ -1,5 +1,6 @@
-//DxLibのヘッダファイル（必須）
-#include "DxLib.h"
+#include "DxLib.h"      //DxLibのヘッダファイル（必須）
+#include "keyboard.h"   //キーボードの処理
+
 
 //マクロ定義
 #define GAME_TITLE "ゲームタイトル" //ゲームタイトル
@@ -39,7 +40,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//ダブルバッファリング有効化
 	SetDrawScreen(DX_SCREEN_BACK);
 
-	
+	//円の中心点
+	int X = GAME_WIDTH / 2;
+	int Y = GAME_HEIGHT / 2;
+	//円の半径
+	int radius = 50;
+
+	//スピード
+	int Xspead = 5;
+	int Yspead = 5;
+
+
 	//無限ループ
 	while (1)
 	{
@@ -47,8 +58,43 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		if (ProcessMessage() != 0) { break; }  //メッセージを受け取り続ける
 		if (ClearDrawScreen() != 0) { break; } //画面をクリア
 
+		AllKeyUpdate();         //キーボード入力の更新
+
+		//キー入力
+		if (KeyDown(KEY_INPUT_UP) == TRUE)
+		{
+			Y -= Yspead;   //上に移動
+		}
+		if (KeyDown(KEY_INPUT_DOWN) == TRUE)
+		{
+			Y += Yspead;   //下に移動
+		}
+		if (KeyDown(KEY_INPUT_LEFT) == TRUE)
+		{
+			X -= Xspead;   //左に移動
+		}
+		if (KeyDown(KEY_INPUT_RIGHT) == TRUE)
+		{
+			X += Xspead;   //右に移動
+		}
+
+		// １でスピードUP・２でスピードDOWN
+		if (KeyDown(KEY_INPUT_1) == TRUE)
+		{
+			Xspead++;
+			Yspead++;
+		}
+		if (KeyDown(KEY_INPUT_2) == TRUE)
+		{
+			Xspead--;
+			Yspead--;
+		}
+
+		DrawCircle(X, Y, radius, GetColor(0, 255, 0), TRUE);
+
 		ScreenFlip();           //ダブルバッファリングした画面を描画
 	}
+
 
 	DxLib_End();				// ＤＸライブラリ使用の終了処理
 
