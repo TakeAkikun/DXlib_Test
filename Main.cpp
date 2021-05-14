@@ -61,19 +61,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		AllKeyUpdate();         //キーボード入力の更新
 
 		//キー入力
-		if (KeyDown(KEY_INPUT_UP) == TRUE)
+		if (KeyDown(KEY_INPUT_UP) == TRUE && Y > 0 + radius)
 		{
 			Y -= Yspead;   //上に移動
 		}
-		if (KeyDown(KEY_INPUT_DOWN) == TRUE)
+		if (KeyDown(KEY_INPUT_DOWN) == TRUE && Y < GAME_HEIGHT - radius)
 		{
 			Y += Yspead;   //下に移動
 		}
-		if (KeyDown(KEY_INPUT_LEFT) == TRUE)
+		if (KeyDown(KEY_INPUT_LEFT) == TRUE && X > 0 + radius)
 		{
 			X -= Xspead;   //左に移動
 		}
-		if (KeyDown(KEY_INPUT_RIGHT) == TRUE)
+		if (KeyDown(KEY_INPUT_RIGHT) == TRUE && X < GAME_WIDTH - radius)
 		{
 			X += Xspead;   //右に移動
 		}
@@ -84,7 +84,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			Xspead++;
 			Yspead++;
 		}
-		if (KeyDown(KEY_INPUT_2) == TRUE)
+		if (KeyDown(KEY_INPUT_2) == TRUE && Xspead > 0 && Yspead > 0)
 		{
 			Xspead--;
 			Yspead--;
