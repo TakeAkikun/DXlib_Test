@@ -189,7 +189,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 		}
 
-		// １でスピードUP・２でスピードDOWN
+		// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
 		if (KeyDown(KEY_INPUT_1) == TRUE)
 		{
 			Xspead++;
@@ -304,6 +304,7 @@ VOID PlayProc(VOID)
 VOID PlayDraw(VOID)
 {
 	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
+	DrawString(0, 20, "1でスピードアップ：2でスピードダウン", GetColor(0, 0, 0));
 	return;
 }
 
@@ -367,39 +368,39 @@ VOID Change(VOID)
 /// <param name=""></param>
 VOID ChangeProc(VOID)
 {
+	//フェードイン
+	if (IsFadeIn == TRUE)
+	{
+		if (fadeInCnt > fadeInCutMax)
+		{
+			fadeInCnt--;               //カウントを減らす
+		}
+		else
+		{
+			//フェードイン処理が終わった
+			fadeInCnt = fadeInCntInit; //カウンタ初期化
+			IsFadeIn = FALSE;          //フェードイン処理終了
+		}
+	}
+
+	//フェードアウト
+	if (IsFadeOut == TRUE)
+	{
+		if (fadeOutCnt < fadeOutCutMax)
+		{
+			fadeOutCnt++;               //カウントを減らす
+		}
+		else
+		{
+			//フェードアウト処理が終わった
+			fadeOutCnt = fadeOutCntInit; //カウンタ初期化
+			IsFadeOut = FALSE;          //フェードアウト処理終了
+		}
+	}
+
 	//切り替え処理終了か？
 	if (IsFadeIn == FALSE && IsFadeOut == FALSE)
 	{
-		//フェードイン
-		if (IsFadeIn == FALSE)
-		{
-			if (fadeInCnt > fadeInCutMax)
-			{
-				fadeInCnt--;               //カウントを減らす
-			}
-			else
-			{
-				//フェードイン処理が終わった
-				fadeInCnt = fadeInCntInit; //カウンタ初期化
-				IsFadeIn = FALSE;          //フェードイン処理終了
-			}
-		}
-
-		//フェードアウト
-		if (IsFadeOut == FALSE)
-		{
-			if (fadeOutCnt < fadeOutCutMax)
-			{
-				fadeOutCnt++;               //カウントを減らす
-			}
-			else
-			{
-				//フェードアウト処理が終わった
-				fadeOutCnt = fadeOutCntInit; //カウンタ初期化
-				IsFadeOut = FALSE;          //フェードアウト処理終了
-			}
-		}
-
 		//フェードインもフェードアウトもしていない時
 		GameScene = NextGameScene;  //次のシーンに切り替え
 		OldGameScene = GameScene;   //以前のゲームシーン更新
