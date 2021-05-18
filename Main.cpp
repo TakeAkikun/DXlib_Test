@@ -156,6 +156,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 		//ƒL[“ü—Í
+		//•Ç‚ğ“Ë‚«”²‚¯‚È‚¢‚æ‚¤‚Éif•¶‚ğ’²®
 		if (KeyDown(KEY_INPUT_UP) == TRUE && Y > 0 + radius)
 		{
 			Y -= Yspead;   //ã‚ÉˆÚ“®
