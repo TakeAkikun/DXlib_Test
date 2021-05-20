@@ -20,6 +20,26 @@ enum GAME_SCENE
 	GAME_SCENE_CHANGE
 };  //ゲームのシーン
 
+//主人公（ボール）
+struct PLAYER
+{
+	int X;
+	int Y;
+	int radius;
+	int Xspead;
+	int Yspead;
+};
+
+//プレイ画面のギミック
+struct GIMIC
+{
+	int Xwall;
+	int Ywall;
+	int XwallSize;
+	int YwallSize;
+	int speadwall;
+};
+
 //グローバル変数
 
 //画面の切り替え
@@ -44,24 +64,28 @@ GAME_SCENE GameScene;       //現在のゲームのシーン
 GAME_SCENE OldGameScene;    //前回のゲームのシーン
 GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
+//ギミックの変数
+GIMIC sikaku = { 1000,300,20,100,20 };
+PLAYER Player = { GAME_WIDTH / 2,GAME_HEIGHT / 2,50,5,5 };
+
 //プロトタイプ宣言
 VOID Title(VOID);     //タイトル画面
 VOID TitleProc(VOID); //タイトル画面（処理）
 VOID TitleDraw(VOID); //タイトル画面（描画）
 
-VOID Play(VOID);					 //プレイ画面
-VOID PlayProc(VOID);				 //プレイ画面（処理）
-VOID PlayDraw(VOID);				 //プレイ画面（描画）
+VOID Play(VOID);					                             //プレイ画面
+VOID PlayProc(VOID);				                             //プレイ画面（処理）
+VOID PlayDraw(VOID);				                             //プレイ画面（描画）
 
-VOID End(VOID);						 //エンド画面
-VOID EndProc(VOID);					 //エンド画面（処理）
-VOID EndDraw(VOID);					 //エンド画面（描画）
+VOID End(VOID);						                             //エンド画面
+VOID EndProc(VOID);					                             //エンド画面（処理）
+VOID EndDraw(VOID);					                             //エンド画面（描画）
 
-VOID Change(VOID);				     //切り替え画面
-VOID ChangeProc(VOID);				 //切り替え画面（処理）
-VOID ChangeDraw(VOID);				 //切り替え画面（描画）
+VOID Change(VOID);					                             //切り替え画面
+VOID ChangeProc(VOID);				                             //切り替え画面（処理）
+VOID ChangeDraw(VOID);				                             //切り替え画面（描画）
 
-VOID ChangeScene(GAME_SCENE seane);  //シーン切り替え
+VOID ChangeScene(GAME_SCENE seane);                              //シーン切り替え
 
 
 // プログラムは WinMain から始まります
@@ -91,16 +115,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//ダブルバッファリング有効化
 	SetDrawScreen(DX_SCREEN_BACK);
-
-	//円の中心点
-	int X = GAME_WIDTH / 2;
-	int Y = GAME_HEIGHT / 2;
-	//円の半径
-	int radius = 50;
-
-	//スピード
-	int Xspead = 5;
-	int Yspead = 5;
 
 
 	//最初のシーンはタイトル画面から
@@ -153,56 +167,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				GameScene = GAME_SCENE_CHANGE; //画面切り替えシーンに変える
 			}
 		}
-
-
-		//キー入力
-		//壁を突き抜けないようにif文を調整
-		if (KeyDown(KEY_INPUT_UP) == TRUE && Y > 0 + radius)
-		{
-			Y -= Yspead;   //上に移動
-			if (Y < 0 + radius)
-			{
-				Y = 0 + radius;
-			}
-		}
-		if (KeyDown(KEY_INPUT_DOWN) == TRUE && Y < GAME_HEIGHT - radius)
-		{
-			Y += Yspead;   //下に移動
-			if (Y > GAME_HEIGHT - radius)
-			{
-				Y = GAME_HEIGHT - radius;
-			}
-		}
-		if (KeyDown(KEY_INPUT_LEFT) == TRUE && X > 0 + radius)
-		{
-			X -= Xspead;   //左に移動
-			if (X < 0 + radius)
-			{
-				X = 0 + radius;
-			}
-		}
-		if (KeyDown(KEY_INPUT_RIGHT) == TRUE && X < GAME_WIDTH - radius)
-		{
-			X += Xspead;   //右に移動
-			if (X > GAME_WIDTH - radius)
-			{
-				X = GAME_WIDTH - radius;
-			}
-		}
-
-		// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
-		if (KeyDown(KEY_INPUT_1) == TRUE)
-		{
-			Xspead++;
-			Yspead++;
-		}
-		if (KeyDown(KEY_INPUT_2) == TRUE && Xspead > 0 && Yspead > 0)
-		{
-			Xspead--;
-			Yspead--;
-		}
-
-		DrawCircle(X, Y, radius, GetColor(0, 255, 0), TRUE);
 
 		ScreenFlip();           //ダブルバッファリングした画面を描画
 	}
@@ -264,6 +228,7 @@ VOID TitleProc(VOID)
 VOID TitleDraw(VOID)
 {
 	DrawString(0, 0, "タイトル画面", GetColor(0, 0, 0));
+	DrawString(GAME_HEIGHT / 2, GAME_WIDTH / 2, "Enterキーでゲーム開始", GetColor(255, 0, 0));
 	return;
 }
 
@@ -286,6 +251,59 @@ VOID Play(VOID)
 /// <param name=""></param>
 VOID PlayProc(VOID)
 {
+	//キー入力
+		//壁を突き抜けないようにif文を調整
+	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0 + Player.radius)
+	{
+		Player.Y -= Player.Yspead;   //上に移動
+		//スピード高すぎてめり込むのを防止
+		if (Player.Y < 0 + Player.radius)
+		{
+			Player.Y = 0 + Player.radius;
+		}
+	}
+	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.Y < GAME_HEIGHT - Player.radius)
+	{
+		Player.Y += Player.Yspead;   //下に移動
+		//スピード高すぎてめり込むのを防止
+		if (Player.Y > GAME_HEIGHT - Player.radius)
+		{
+			Player.Y = GAME_HEIGHT - Player.radius;
+		}
+	}
+	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.X > 0 + Player.radius)
+	{
+		Player.X -= Player.Xspead;   //左に移動
+		//スピード高すぎてめり込むのを防止
+		if (Player.X < 0 + Player.radius)
+		{
+			Player.X = 0 + Player.radius;
+		}
+	}
+	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.X < GAME_WIDTH - Player.radius)
+	{
+		Player.X += Player.Xspead;   //右に移動
+		//スピード高すぎてめり込むのを防止
+		if (Player.X > GAME_WIDTH - Player.radius)
+		{
+			Player.X = GAME_WIDTH - Player.radius;
+		}
+	}
+
+	// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
+	if (KeyDown(KEY_INPUT_1) == TRUE)
+	{
+		Player.Xspead++;
+		Player.Yspead++;
+	}
+	if (KeyDown(KEY_INPUT_2) == TRUE && Player.Xspead > 0 && Player.Yspead > 0)
+	{
+		Player.Xspead--;
+		Player.Yspead--;
+	}
+
+	DrawCircle(Player.X, Player.Y, Player.radius, GetColor(0, 255, 0), TRUE);
+
 	//エンドシーンに切り替え
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
 		//シーン切り替え
@@ -306,6 +324,16 @@ VOID PlayDraw(VOID)
 {
 	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
 	DrawString(0, 20, "1でスピードアップ：2でスピードダウン", GetColor(0, 0, 0));
+
+	//四角を描画
+	sikaku.Ywall += sikaku.speadwall;
+	if (sikaku.Ywall == 0 || sikaku.Ywall == GAME_HEIGHT - sikaku.YwallSize)
+	{
+		sikaku.speadwall = -sikaku.speadwall;
+	}
+
+	DrawBox(sikaku.Xwall, sikaku.Ywall, sikaku.Xwall + sikaku.XwallSize, sikaku.Ywall + sikaku.YwallSize, GetColor(0, 0, 0), TRUE);
+
 	return;
 }
 
