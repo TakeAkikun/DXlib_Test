@@ -120,13 +120,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return -1;                   //エラー終了
 	}
 
-	//
-	GetGraphSize(Player.handle, &Player.width, &Player.height) :
+	//画面の幅と高さを取得
+	GetGraphSize(Player.handle, &Player.width, &Player.height);
 
-	//
-	Prayer.x = GAME_WIDTH / 2 - Player.width / 2;
-	Player.y = GAME_HEIGHT / 2 Player.height / 2;
-	Player.spead = 5;
+	//プレイヤーを初期化
+	Player.X = GAME_WIDTH / 2 - Player.width / 2;
+	Player.Y = GAME_HEIGHT / 2 - Player.height / 2;
+	Player.Xspead = 5;
+	Player.Yspead = 5;
 	Player.IsDraw = TRUE;
 
 	//無限ループ

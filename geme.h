@@ -25,6 +25,7 @@ enum GAME_SCENE
 	GAME_SCENE_CHANGE
 };  //ゲームのシーン
 
+/*
 //構造体
 //主人公（ボール）
 struct PLAYER
@@ -35,7 +36,9 @@ struct PLAYER
 	int Xspead;
 	int Yspead;
 };
+*/
 
+/*
 //プレイ画面のギミック
 struct GIMIC
 {
@@ -45,3 +48,4 @@ struct GIMIC
 	int YwallSize;
 	int speadwall;
 };
+*/
