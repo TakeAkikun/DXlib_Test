@@ -1,25 +1,8 @@
-#include "DxLib.h"      //DxLibのヘッダファイル（必須）
+
+//ヘッダファイル読み込み
+#include "geme.h"       //ゲーム全体のヘッダファイル
 #include "keyboard.h"   //キーボードの処理
 #include "FPS.h"        //FPSの処理
-
-
-//マクロ定義
-#define GAME_TITLE "ゲームタイトル" //ゲームタイトル
-#define GAME_WIDTH   1280            //ゲーム画面の幅
-#define GAME_HEIGHT  720             //ゲーム画面の幅
-#define GAME_COLOR   32              //ゲーム画面の色数
-
-#define GAME_ICON_ID 333             //ゲームのアイコンのID
-
-#define GAME_WINDOW_BAR 0            //ウィンドウバーの種類
-
-enum GAME_SCENE
-{
-	GAME_SCENE_TITLE,
-	GAME_SCENE_PLAY,
-	GAME_SCENE_END,
-	GAME_SCENE_CHANGE
-};  //ゲームのシーン
 
 //主人公（ボール）
 struct PLAYER
