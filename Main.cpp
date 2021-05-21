@@ -4,25 +4,23 @@
 #include "keyboard.h"   //キーボードの処理
 #include "FPS.h"        //FPSの処理
 
-//主人公（ボール）
-struct PLAYER
+//構造体の定義
+struct CHARACTOR
 {
-	int X;
-	int Y;
-	int radius;
-	int Xspead;
-	int Yspead;
+	int handle = -1;  //画像のハンドル（管理番号）
+	char path[255];   //画像の場所（パス）
+
+	int X;            //X位置
+	int Y;            //Y位置
+	int width;        //幅
+	int height;       //高さ
+	int Xspead = 1;   //移動速度
+	int Yspead = 1;   //移動速度
+
+	RECT coll;          //当たり判定の領域（四角）
+	BOOL IsDraw = FALSE;//画像が描画できる？
 };
 
-//プレイ画面のギミック
-struct GIMIC
-{
-	int Xwall;
-	int Ywall;
-	int XwallSize;
-	int YwallSize;
-	int speadwall;
-};
 
 //グローバル変数
 
@@ -48,9 +46,10 @@ GAME_SCENE GameScene;       //現在のゲームのシーン
 GAME_SCENE OldGameScene;    //前回のゲームのシーン
 GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
+//プレイヤーの構造体
+CHARACTOR Player;
 //ギミックの変数
-GIMIC sikaku = { 1000,300,40,40,20 };
-PLAYER Player = { GAME_WIDTH / 2,GAME_HEIGHT / 2,20,10,10 };
+//GIMIC sikaku = { 1000,300,40,40,20 };
 
 //プロトタイプ宣言
 VOID Title(VOID);     //タイトル画面
@@ -103,6 +102,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//最初のシーンはタイトル画面から
 	GameScene = GAME_SCENE_TITLE;
+
+	//プレイヤーの画像を読み込み
+	strcpyDx(Player.path, ".\\image\\Player.jpeg");  //パスのコピー
+	Player.handle = LoadGraph(Player.path);          //画像の読み込み
+
+	//画像が読み込めなかったときは、エラー(－1)が入る
+	if (Player.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //メインのウィンドウタイトル
+			Player.path,             //メッセージ本文
+			"画像読み込みエラー",    //メッセージタイトル
+			MB_OK                    //ボタン
+		);
+		DxLib_End();                 //強制終了
+		return -1;                   //エラー終了
+	}
+
+	//
+	GetGraphSize(Player.handle, &Player.width, &Player.height) :
+
+	//
+	Prayer.x = GAME_WIDTH / 2 - Player.width / 2;
+	Player.y = GAME_HEIGHT / 2 Player.height / 2;
+	Player.spead = 5;
+	Player.IsDraw = TRUE;
 
 	//無限ループ
 	while (1)
@@ -164,6 +189,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ScreenFlip();           //ダブルバッファリングした画面を描画
 	}
 
+	//終わるときの処理
+	DeleteGraph(Player.handle); //画像をメモリ上から削除
 
 	DxLib_End();				// ＤＸライブラリ使用の終了処理
 
@@ -244,6 +271,7 @@ VOID Play(VOID)
 /// <param name=""></param>
 VOID PlayProc(VOID)
 {
+	/*
 	//キー入力
 		//壁を突き抜けないようにif文を調整
 	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0 + Player.radius)
@@ -310,6 +338,7 @@ VOID PlayProc(VOID)
 		//エンド画面に切り替え
 		ChangeScene(GAME_SCENE_END);
 	}
+	*/
 
 	//エンドシーンに切り替え（保険）
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
@@ -333,11 +362,22 @@ VOID PlayDraw(VOID)
 	DrawString(0, 20, "画面右端までたどり着こう！", GetColor(0, 0, 0));
 	DrawString(0, 40, "（1でスピードアップ：2でスピードダウン）", GetColor(0, 0, 0));
 
+	//プレイ画面の描画
+	if (Player.IsDraw == TRUE)
+	{
+		//画像を描画
+		DrawGraph(Player.X, Player.Y, Player.handle, TRUE);
+	}
+
+	/*
 	//丸の描画
 	DrawCircle(Player.X, Player.Y, Player.radius, GetColor(0, 255, 0), TRUE);
+	*/
 
+	/*
 	//四角の描画
 	DrawBox(sikaku.Xwall, sikaku.Ywall, sikaku.Xwall + sikaku.XwallSize, sikaku.Ywall + sikaku.YwallSize, GetColor(0, 0, 0), TRUE);
+	*/
 
 	return;
 }

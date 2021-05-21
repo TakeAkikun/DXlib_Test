@@ -1,7 +1,7 @@
 #pragma once
 
 //ヘッダファイルを読み込み
-#include "keyboard.h"
+#include "geme.h"
 
 //キーボードのヘッダファイル
 

@@ -1,7 +1,7 @@
 #pragma once
 
 //ヘッダファイルの読み込み
-#include "FPS.h"
+#include "geme.h"
 
 //マクロ定義
 #define GAME_FPS 60       //FPSの標準
