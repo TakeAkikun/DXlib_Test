@@ -1,5 +1,6 @@
 #include "DxLib.h"      //DxLibのヘッダファイル（必須）
 #include "keyboard.h"   //キーボードの処理
+#include "FPS.h"        //FPSの処理
 
 
 //マクロ定義
@@ -65,8 +66,8 @@ GAME_SCENE OldGameScene;    //前回のゲームのシーン
 GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
 //ギミックの変数
-GIMIC sikaku = { 1000,300,20,20,20 };
-PLAYER Player = { GAME_WIDTH / 2,GAME_HEIGHT / 2,10,5,5 };
+GIMIC sikaku = { 1000,300,40,40,20 };
+PLAYER Player = { GAME_WIDTH / 2,GAME_HEIGHT / 2,20,10,10 };
 
 //プロトタイプ宣言
 VOID Title(VOID);     //タイトル画面
@@ -129,6 +130,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		AllKeyUpdate();         //キーボード入力の更新
 
+		//FPS値の更新
+		FPSUpdate();
+
 		//ESCキーで強制終了
 		if (KeyClick(KEY_INPUT_ESCAPE) == TRUE) { break; }
 
@@ -167,6 +171,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				GameScene = GAME_SCENE_CHANGE; //画面切り替えシーンに変える
 			}
 		}
+
+		//FPS値を描画
+		FPSDraw();
+
+		//FPS値を待つ
+		FPSWait();
 
 		ScreenFlip();           //ダブルバッファリングした画面を描画
 	}
