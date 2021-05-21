@@ -65,8 +65,8 @@ GAME_SCENE OldGameScene;    //前回のゲームのシーン
 GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
 //ギミックの変数
-GIMIC sikaku = { 1000,300,20,100,20 };
-PLAYER Player = { GAME_WIDTH / 2,GAME_HEIGHT / 2,50,5,5 };
+GIMIC sikaku = { 1000,300,20,20,20 };
+PLAYER Player = { GAME_WIDTH / 2,GAME_HEIGHT / 2,10,5,5 };
 
 //プロトタイプ宣言
 VOID Title(VOID);     //タイトル画面
@@ -302,14 +302,28 @@ VOID PlayProc(VOID)
 		Player.Yspead--;
 	}
 
-	DrawCircle(Player.X, Player.Y, Player.radius, GetColor(0, 255, 0), TRUE);
+	//四角の動き
+	sikaku.Ywall += sikaku.speadwall;
+	if (sikaku.Ywall == 0 || sikaku.Ywall == GAME_HEIGHT - sikaku.YwallSize)
+	{
+		sikaku.speadwall = -sikaku.speadwall;
+	}
 
 	//エンドシーンに切り替え
-	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
+	if (TRUE && Player.X >= GAME_WIDTH - Player.radius) {
 		//シーン切り替え
 		//次のシーンの初期化をココで行うと楽
 
 		//エンド画面に切り替え
+		ChangeScene(GAME_SCENE_END);
+	}
+
+	//エンドシーンに切り替え（保険）
+	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
+		//シーン切り替え
+		//次のシーンの初期化をココで行うと楽
+
+		//プレイ画面に切り替え
 		ChangeScene(GAME_SCENE_END);
 	}
 
@@ -323,15 +337,13 @@ VOID PlayProc(VOID)
 VOID PlayDraw(VOID)
 {
 	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
-	DrawString(0, 20, "1でスピードアップ：2でスピードダウン", GetColor(0, 0, 0));
+	DrawString(0, 20, "画面右端までたどり着こう！", GetColor(0, 0, 0));
+	DrawString(0, 40, "（1でスピードアップ：2でスピードダウン）", GetColor(0, 0, 0));
 
-	//四角を描画
-	sikaku.Ywall += sikaku.speadwall;
-	if (sikaku.Ywall == 0 || sikaku.Ywall == GAME_HEIGHT - sikaku.YwallSize)
-	{
-		sikaku.speadwall = -sikaku.speadwall;
-	}
+	//丸の描画
+	DrawCircle(Player.X, Player.Y, Player.radius, GetColor(0, 255, 0), TRUE);
 
+	//四角の描画
 	DrawBox(sikaku.Xwall, sikaku.Ywall, sikaku.Xwall + sikaku.XwallSize, sikaku.Ywall + sikaku.YwallSize, GetColor(0, 0, 0), TRUE);
 
 	return;
@@ -375,6 +387,7 @@ VOID EndProc(VOID)
 VOID EndDraw(VOID)
 {
 	DrawString(0, 0, "エンド画面", GetColor(0, 0, 0));
+	DrawString(GAME_HEIGHT / 2, GAME_WIDTH / 2, "クリアおめでとう！", GetColor(255, 0, 0));
 	return;
 }
 
