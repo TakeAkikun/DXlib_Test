@@ -1,6 +1,7 @@
 //FPSのソースファイル
 
 //ヘッダファイルの読み込み
+#include "geme.h"
 #include "DxLib.h"
 #include "FPS.h"
 
