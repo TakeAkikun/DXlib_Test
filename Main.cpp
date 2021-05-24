@@ -68,6 +68,7 @@ VOID ChangeDraw(VOID);				                             //切り替え画面（描画）
 
 VOID ChangeScene(GAME_SCENE seane);                              //シーン切り替え
 
+VOID CollUpdate(CHARACTOR* chara);                               //当たり判定の領域を更新
 
 // プログラムは WinMain から始まります
 // Windousのプログラミング方法で動いている。（WinAPI）
@@ -120,6 +121,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//画面の幅と高さを取得
 	GetGraphSize(Player.handle, &Player.width, &Player.height);
+
+	//当たり判定を更新
+	CollUpdate(&Player);  //プレイヤーの当たり判定のアドレス
 
 	//プレイヤーを初期化
 	Player.X = GAME_WIDTH / 2 - Player.width / 2;
@@ -270,7 +274,7 @@ VOID Play(VOID)
 /// <param name=""></param>
 VOID PlayProc(VOID)
 {
-	//エンドシーンに切り替え（保険）
+	//エンドシーンに切り替え
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
 		//シーン切り替え
 		//次のシーンの初期化をココで行うと楽
@@ -278,6 +282,60 @@ VOID PlayProc(VOID)
 		//プレイ画面に切り替え
 		ChangeScene(GAME_SCENE_END);
 	}
+
+	//プレイヤーの操作
+		//壁を突き抜けないようにif文を調整
+	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0)
+	{
+		Player.Y -= Player.Yspead;   //上に移動
+		//スピード高すぎてめり込むのを防止
+		if (Player.Y < 0)
+		{
+			Player.Y = 0;
+		}
+	}
+	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.Y < GAME_HEIGHT - Player.height)
+	{
+		Player.Y += Player.Yspead;   //下に移動
+		//スピード高すぎてめり込むのを防止
+		if (Player.Y > GAME_HEIGHT - Player.height)
+		{
+			Player.Y = GAME_HEIGHT - Player.height;
+		}
+	}
+	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.X > 0)
+	{
+		Player.X -= Player.Xspead;   //左に移動
+		//スピード高すぎてめり込むのを防止
+		if (Player.X < 0)
+		{
+			Player.X = 0;
+		}
+	}
+	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.X < GAME_WIDTH - Player.width)
+	{
+		Player.X += Player.Xspead;   //右に移動
+		//スピード高すぎてめり込むのを防止
+		if (Player.X > GAME_WIDTH - Player.width)
+		{
+			Player.X = GAME_WIDTH - Player.width;
+		}
+	}
+
+	// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
+	if (KeyDown(KEY_INPUT_1) == TRUE)
+	{
+		Player.Xspead++;
+		Player.Yspead++;
+	}
+	if (KeyDown(KEY_INPUT_2) == TRUE && Player.Xspead > 0 && Player.Yspead > 0)
+	{
+		Player.Xspead--;
+		Player.Yspead--;
+	}
+
+	//当たり判定を更新
+	CollUpdate(&Player);
 
 	return;
 }
@@ -288,13 +346,21 @@ VOID PlayProc(VOID)
 /// <param name=""></param>
 VOID PlayDraw(VOID)
 {
-	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));;
+	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
+	DrawString(0, 20, "画面右端までたどり着こう！", GetColor(0, 0, 0));
+	DrawString(0, 40, "（1でスピードアップ：2でスピードダウン）", GetColor(0, 0, 0));
 
 	//プレイ画面の描画
 	if (Player.IsDraw == TRUE)
 	{
 		//画像を描画
 		DrawGraph(Player.X, Player.Y, Player.handle, TRUE);
+
+		if (GAME_DEBUG == TRUE)
+		{
+			//四角を描画
+			DrawBox(Player.coll.left, Player.coll.top, Player.coll.right, Player.coll.bottom, GetColor(255, 0, 0), FALSE);
+		}
 	}
 
 	return;
@@ -443,5 +509,20 @@ VOID ChangeDraw(VOID)
 	SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
 
 	DrawString(0, 0, "切り替え画面", GetColor(0, 0, 0));
+	return;
+}
+
+
+/// <summary>
+/// 当たり判定の領域更新
+/// </summary>
+/// <param name="coll">当たり判定の領域</param>
+VOID CollUpdate(CHARACTOR* chara)
+{
+	chara->coll.left = chara->X;
+	chara->coll.top = chara->Y;
+	chara->coll.right = chara->X + chara->width;
+	chara->coll.bottom = chara->Y + chara->height;
+
 	return;
 }
