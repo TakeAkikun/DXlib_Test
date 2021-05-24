@@ -24,28 +24,3 @@ enum GAME_SCENE
 	GAME_SCENE_END,
 	GAME_SCENE_CHANGE
 };  //ゲームのシーン
-
-/*
-//構造体
-//主人公（ボール）
-struct PLAYER
-{
-	int X;
-	int Y;
-	int radius;
-	int Xspead;
-	int Yspead;
-};
-*/
-
-/*
-//プレイ画面のギミック
-struct GIMIC
-{
-	int Xwall;
-	int Ywall;
-	int XwallSize;
-	int YwallSize;
-	int speadwall;
-};
-*/

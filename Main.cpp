@@ -48,8 +48,6 @@ GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
 //プレイヤーの構造体
 CHARACTOR Player;
-//ギミックの変数
-//GIMIC sikaku = { 1000,300,40,40,20 };
 
 //プロトタイプ宣言
 VOID Title(VOID);     //タイトル画面
@@ -272,75 +270,6 @@ VOID Play(VOID)
 /// <param name=""></param>
 VOID PlayProc(VOID)
 {
-	/*
-	//キー入力
-		//壁を突き抜けないようにif文を調整
-	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0 + Player.radius)
-	{
-		Player.Y -= Player.Yspead;   //上に移動
-		//スピード高すぎてめり込むのを防止
-		if (Player.Y < 0 + Player.radius)
-		{
-			Player.Y = 0 + Player.radius;
-		}
-	}
-	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.Y < GAME_HEIGHT - Player.radius)
-	{
-		Player.Y += Player.Yspead;   //下に移動
-		//スピード高すぎてめり込むのを防止
-		if (Player.Y > GAME_HEIGHT - Player.radius)
-		{
-			Player.Y = GAME_HEIGHT - Player.radius;
-		}
-	}
-	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.X > 0 + Player.radius)
-	{
-		Player.X -= Player.Xspead;   //左に移動
-		//スピード高すぎてめり込むのを防止
-		if (Player.X < 0 + Player.radius)
-		{
-			Player.X = 0 + Player.radius;
-		}
-	}
-	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.X < GAME_WIDTH - Player.radius)
-	{
-		Player.X += Player.Xspead;   //右に移動
-		//スピード高すぎてめり込むのを防止
-		if (Player.X > GAME_WIDTH - Player.radius)
-		{
-			Player.X = GAME_WIDTH - Player.radius;
-		}
-	}
-
-	// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
-	if (KeyDown(KEY_INPUT_1) == TRUE)
-	{
-		Player.Xspead++;
-		Player.Yspead++;
-	}
-	if (KeyDown(KEY_INPUT_2) == TRUE && Player.Xspead > 0 && Player.Yspead > 0)
-	{
-		Player.Xspead--;
-		Player.Yspead--;
-	}
-
-	//四角の動き
-	sikaku.Ywall += sikaku.speadwall;
-	if (sikaku.Ywall == 0 || sikaku.Ywall == GAME_HEIGHT - sikaku.YwallSize)
-	{
-		sikaku.speadwall = -sikaku.speadwall;
-	}
-
-	//エンドシーンに切り替え
-	if (TRUE && Player.X >= GAME_WIDTH - Player.radius) {
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
-
-		//エンド画面に切り替え
-		ChangeScene(GAME_SCENE_END);
-	}
-	*/
-
 	//エンドシーンに切り替え（保険）
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
 		//シーン切り替え
@@ -359,9 +288,7 @@ VOID PlayProc(VOID)
 /// <param name=""></param>
 VOID PlayDraw(VOID)
 {
-	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
-	DrawString(0, 20, "画面右端までたどり着こう！", GetColor(0, 0, 0));
-	DrawString(0, 40, "（1でスピードアップ：2でスピードダウン）", GetColor(0, 0, 0));
+	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));;
 
 	//プレイ画面の描画
 	if (Player.IsDraw == TRUE)
@@ -369,16 +296,6 @@ VOID PlayDraw(VOID)
 		//画像を描画
 		DrawGraph(Player.X, Player.Y, Player.handle, TRUE);
 	}
-
-	/*
-	//丸の描画
-	DrawCircle(Player.X, Player.Y, Player.radius, GetColor(0, 255, 0), TRUE);
-	*/
-
-	/*
-	//四角の描画
-	DrawBox(sikaku.Xwall, sikaku.Ywall, sikaku.Xwall + sikaku.XwallSize, sikaku.Ywall + sikaku.YwallSize, GetColor(0, 0, 0), TRUE);
-	*/
 
 	return;
 }
