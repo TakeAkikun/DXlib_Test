@@ -34,16 +34,6 @@ struct GIMIC
 		sikaku.speadwall = -sikaku.speadwall;
 	}
 
-	//エンドシーンに切り替え
-	if (TRUE && Player.X >= GAME_WIDTH - Player.radius) {
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
-
-		//エンド画面に切り替え
-		ChangeScene(GAME_SCENE_END);
-	}
-	*/
-
 	/*
 	//丸の描画
 	DrawCircle(Player.X, Player.Y, Player.radius, GetColor(0, 255, 0), TRUE);

@@ -21,7 +21,6 @@ struct CHARACTOR
 	BOOL IsDraw = FALSE;//画像が描画できる？
 };
 
-
 //グローバル変数
 
 //画面の切り替え
@@ -49,6 +48,9 @@ GAME_SCENE NextGameScene;   //次回のゲームのシーン
 //プレイヤーの構造体
 CHARACTOR Player;
 
+//ゴールの構造体
+CHARACTOR Goal;
+
 //プロトタイプ宣言
 VOID Title(VOID);     //タイトル画面
 VOID TitleProc(VOID); //タイトル画面（処理）
@@ -68,6 +70,7 @@ VOID ChangeDraw(VOID);				                             //切り替え画面（描画）
 
 VOID ChangeScene(GAME_SCENE seane);                              //シーン切り替え
 
+VOID CollUpdatePlayer(CHARACTOR* chara);                         //当たり判定の領域を更新(プレイヤー)
 VOID CollUpdate(CHARACTOR* chara);                               //当たり判定の領域を更新
 
 // プログラムは WinMain から始まります
@@ -103,7 +106,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	GameScene = GAME_SCENE_TITLE;
 
 	//プレイヤーの画像を読み込み
-	strcpyDx(Player.path, ".\\image\\Player.jpeg");  //パスのコピー
+	strcpyDx(Player.path, ".\\image\\Player.png");  //パスのコピー
 	Player.handle = LoadGraph(Player.path);          //画像の読み込み
 
 	//画像が読み込めなかったときは、エラー(－1)が入る
@@ -123,14 +126,44 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	GetGraphSize(Player.handle, &Player.width, &Player.height);
 
 	//当たり判定を更新
-	CollUpdate(&Player);  //プレイヤーの当たり判定のアドレス
+	CollUpdatePlayer(&Player);  //プレイヤーの当たり判定のアドレス
 
 	//プレイヤーを初期化
 	Player.X = GAME_WIDTH / 2 - Player.width / 2;
 	Player.Y = GAME_HEIGHT / 2 - Player.height / 2;
-	Player.Xspead = 5;
-	Player.Yspead = 5;
+	Player.Xspead = 300;
+	Player.Yspead = 300;
 	Player.IsDraw = TRUE;
+
+	//ゴールの画像を読み込み
+	strcpyDx(Goal.path, ".\\image\\Goal.jpeg");  //パスのコピー
+	Goal.handle = LoadGraph(Goal.path);          //画像の読み込み
+
+	//画像が読み込めなかったときは、エラー(－1)が入る
+	if (Goal.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //メインのウィンドウタイトル
+			Goal.path,               //メッセージ本文
+			"画像読み込みエラー",    //メッセージタイトル
+			MB_OK                    //ボタン
+		);
+		DxLib_End();                 //強制終了
+		return -1;                   //エラー終了
+	}
+
+	//画面の幅と高さを取得
+	GetGraphSize(Goal.handle, &Goal.width, &Goal.height);
+
+	//当たり判定を更新
+	CollUpdate(&Goal);  //ゴールの当たり判定のアドレス
+
+	//ゴールを初期化
+	Goal.X = GAME_WIDTH - Goal.width;
+	Goal.Y = GAME_HEIGHT - Goal.height;
+	Goal.Xspead = 300;
+	Goal.Yspead = 300;
+	Goal.IsDraw = TRUE;
 
 	//無限ループ
 	while (1)
@@ -194,6 +227,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//終わるときの処理
 	DeleteGraph(Player.handle); //画像をメモリ上から削除
+	DeleteGraph(Goal.handle);   //画像をメモリ上から削除
 
 	DxLib_End();				// ＤＸライブラリ使用の終了処理
 
@@ -283,11 +317,28 @@ VOID PlayProc(VOID)
 		ChangeScene(GAME_SCENE_END);
 	}
 
+	//エンドシーンに切り替え
+	if (TRUE && Player.X >= GAME_WIDTH - Player.width) {
+		//シーン切り替え
+		//次のシーンの初期化をココで行うと楽
+
+		//プレイヤーを初期化
+		Player.X = GAME_WIDTH / 2 - Player.width / 2;
+		Player.Y = GAME_HEIGHT / 2 - Player.height / 2;
+		Player.Xspead = 300;
+		Player.Yspead = 300;
+		Player.IsDraw = TRUE;
+
+		//エンド画面に切り替え
+		ChangeScene(GAME_SCENE_END);
+	}
+
 	//プレイヤーの操作
 		//壁を突き抜けないようにif文を調整
 	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0)
 	{
-		Player.Y -= Player.Yspead;   //上に移動
+		Player.Y -= Player.Yspead * fps.DeltaTime;   //上に移動
+
 		//スピード高すぎてめり込むのを防止
 		if (Player.Y < 0)
 		{
@@ -296,7 +347,8 @@ VOID PlayProc(VOID)
 	}
 	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.Y < GAME_HEIGHT - Player.height)
 	{
-		Player.Y += Player.Yspead;   //下に移動
+		Player.Y += Player.Yspead * fps.DeltaTime;   //下に移動
+
 		//スピード高すぎてめり込むのを防止
 		if (Player.Y > GAME_HEIGHT - Player.height)
 		{
@@ -305,7 +357,8 @@ VOID PlayProc(VOID)
 	}
 	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.X > 0)
 	{
-		Player.X -= Player.Xspead;   //左に移動
+		Player.X -= Player.Xspead * fps.DeltaTime;   //左に移動
+
 		//スピード高すぎてめり込むのを防止
 		if (Player.X < 0)
 		{
@@ -314,7 +367,8 @@ VOID PlayProc(VOID)
 	}
 	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.X < GAME_WIDTH - Player.width)
 	{
-		Player.X += Player.Xspead;   //右に移動
+		Player.X += Player.Xspead * fps.DeltaTime;   //右に移動
+
 		//スピード高すぎてめり込むのを防止
 		if (Player.X > GAME_WIDTH - Player.width)
 		{
@@ -325,17 +379,18 @@ VOID PlayProc(VOID)
 	// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
 	if (KeyDown(KEY_INPUT_1) == TRUE)
 	{
-		Player.Xspead++;
-		Player.Yspead++;
+		Player.Xspead += 5;
+		Player.Yspead += 5;
 	}
 	if (KeyDown(KEY_INPUT_2) == TRUE && Player.Xspead > 0 && Player.Yspead > 0)
 	{
-		Player.Xspead--;
-		Player.Yspead--;
+		Player.Xspead -= 5;
+		Player.Yspead -= 5;
 	}
 
 	//当たり判定を更新
-	CollUpdate(&Player);
+	CollUpdatePlayer(&Player);
+	CollUpdatePlayer(&Goal);
 
 	return;
 }
@@ -346,9 +401,17 @@ VOID PlayProc(VOID)
 /// <param name=""></param>
 VOID PlayDraw(VOID)
 {
-	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
-	DrawString(0, 20, "画面右端までたどり着こう！", GetColor(0, 0, 0));
-	DrawString(0, 40, "（1でスピードアップ：2でスピードダウン）", GetColor(0, 0, 0));
+	if (Goal.IsDraw == TRUE)
+	{
+		//画像を描画
+		DrawGraph(Goal.X, Goal.Y, Goal.handle, TRUE);
+
+		if (GAME_DEBUG == TRUE)
+		{
+			//四角を描画
+			DrawBox(Goal.coll.left, Goal.coll.top, Goal.coll.right, Goal.coll.bottom, GetColor(255, 0, 0), FALSE);
+		}
+	}
 
 	//プレイ画面の描画
 	if (Player.IsDraw == TRUE)
@@ -362,6 +425,10 @@ VOID PlayDraw(VOID)
 			DrawBox(Player.coll.left, Player.coll.top, Player.coll.right, Player.coll.bottom, GetColor(255, 0, 0), FALSE);
 		}
 	}
+
+	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
+	DrawString(0, 20, "画面右端までたどり着こう！", GetColor(0, 0, 0));
+	DrawString(0, 40, "（1でスピードアップ：2でスピードダウン）", GetColor(0, 0, 0));
 
 	return;
 }
@@ -512,6 +579,20 @@ VOID ChangeDraw(VOID)
 	return;
 }
 
+
+/// <summary>
+/// 当たり判定の領域更新(プレイヤー)
+/// </summary>
+/// <param name="coll">当たり判定の領域</param>
+VOID CollUpdatePlayer(CHARACTOR* chara)
+{
+	chara->coll.left = chara->X;
+	chara->coll.top = chara->Y;
+	chara->coll.right = chara->X + chara->width;
+	chara->coll.bottom = chara->Y + chara->height;
+
+	return;
+}
 
 /// <summary>
 /// 当たり判定の領域更新
