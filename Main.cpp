@@ -318,7 +318,9 @@ VOID PlayProc(VOID)
 	}
 
 	//エンドシーンに切り替え
-	if (TRUE && Player.X >= GAME_WIDTH - Player.width) {
+	if ((Player.X <= Goal.X && Player.X + Player.width >= Goal.X)&&
+		(Player.Y <= Goal.Y && Player.Y + Player.height >= Goal.Y)) 
+	{
 		//シーン切り替え
 		//次のシーンの初期化をココで行うと楽
 
