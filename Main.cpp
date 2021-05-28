@@ -38,7 +38,7 @@ int fadeOutCutMax = fadeTimeMax;            //ƒtƒF[ƒhƒAƒEƒg‚ÌƒJƒEƒ“ƒ^XAX
 //ƒtƒF[ƒhƒCƒ“
 int fadeInCntInit = fadeTimeMax;            //‰Šú’l
 int fadeInCnt = fadeInCntInit;              //ƒtƒF[ƒhƒCƒ“‚ÌƒJƒEƒ“ƒ^
-int fadeInCutMax = fadeTimeMax;                       //ƒtƒF[ƒhƒCƒ“‚ÌƒJƒEƒ“ƒ^XAX
+int fadeInCutMax = fadeTimeMax;             //ƒtƒF[ƒhƒCƒ“‚ÌƒJƒEƒ“ƒ^XAX
 
 //ƒV[ƒ“‚ğŠÇ—‚·‚é•Ï”
 GAME_SCENE GameScene;       //Œ»İ‚ÌƒQ[ƒ€‚ÌƒV[ƒ“
@@ -72,6 +72,8 @@ VOID ChangeScene(GAME_SCENE seane);                              //ƒV[ƒ“Ø‚è‘Ö‚
 
 VOID CollUpdatePlayer(CHARACTOR* chara);                         //“–‚½‚è”»’è‚Ì—Ìˆæ‚ğXV(ƒvƒŒƒCƒ„[)
 VOID CollUpdate(CHARACTOR* chara);                               //“–‚½‚è”»’è‚Ì—Ìˆæ‚ğXV
+
+BOOL OnCollision(RECT coll1 , RECT coll2);                       //“–‚½‚Á‚Ä‚¢‚é‚©‚ğ’²‚×‚é
 
 // ƒvƒƒOƒ‰ƒ€‚Í WinMain ‚©‚çn‚Ü‚è‚Ü‚·
 // Windous‚ÌƒvƒƒOƒ‰ƒ~ƒ“ƒO•û–@‚Å“®‚¢‚Ä‚¢‚éBiWinAPIj
@@ -125,15 +127,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
 	GetGraphSize(Player.handle, &Player.width, &Player.height);
 
-	//“–‚½‚è”»’è‚ğXV
-	CollUpdatePlayer(&Player);  //ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
-
 	//ƒvƒŒƒCƒ„[‚ğ‰Šú‰»
-	Player.X = GAME_WIDTH / 2 - Player.width / 2;
-	Player.Y = GAME_HEIGHT / 2 - Player.height / 2;
+	Player.X = 0;
+	Player.Y = 0;
 	Player.Xspead = 300;
 	Player.Yspead = 300;
 	Player.IsDraw = TRUE;
+
+	//“–‚½‚è”»’è‚ğXV
+	CollUpdatePlayer(&Player);  //ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
 
 	//ƒS[ƒ‹‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
 	strcpyDx(Goal.path, ".\\image\\Goal.jpeg");  //ƒpƒX‚ÌƒRƒs[
@@ -155,15 +157,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
 	GetGraphSize(Goal.handle, &Goal.width, &Goal.height);
 
-	//“–‚½‚è”»’è‚ğXV
-	CollUpdate(&Goal);  //ƒS[ƒ‹‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
-
 	//ƒS[ƒ‹‚ğ‰Šú‰»
 	Goal.X = GAME_WIDTH - Goal.width;
 	Goal.Y = GAME_HEIGHT - Goal.height;
 	Goal.Xspead = 300;
 	Goal.Yspead = 300;
 	Goal.IsDraw = TRUE;
+
+	//“–‚½‚è”»’è‚ğXV
+	CollUpdate(&Goal);  //ƒS[ƒ‹‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
 
 	//–³ŒÀƒ‹[ƒv
 	while (1)
@@ -308,33 +310,6 @@ VOID Play(VOID)
 /// <param name=""></param>
 VOID PlayProc(VOID)
 {
-	//ƒGƒ“ƒhƒV[ƒ“‚ÉØ‚è‘Ö‚¦
-	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
-		//ƒV[ƒ“Ø‚è‘Ö‚¦
-		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
-
-		//ƒvƒŒƒC‰æ–Ê‚ÉØ‚è‘Ö‚¦
-		ChangeScene(GAME_SCENE_END);
-	}
-
-	//ƒGƒ“ƒhƒV[ƒ“‚ÉØ‚è‘Ö‚¦
-	if ((Player.X <= Goal.X && Player.X + Player.width >= Goal.X)&&
-		(Player.Y <= Goal.Y && Player.Y + Player.height >= Goal.Y)) 
-	{
-		//ƒV[ƒ“Ø‚è‘Ö‚¦
-		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
-
-		//ƒvƒŒƒCƒ„[‚ğ‰Šú‰»
-		Player.X = GAME_WIDTH / 2 - Player.width / 2;
-		Player.Y = GAME_HEIGHT / 2 - Player.height / 2;
-		Player.Xspead = 300;
-		Player.Yspead = 300;
-		Player.IsDraw = TRUE;
-
-		//ƒGƒ“ƒh‰æ–Ê‚ÉØ‚è‘Ö‚¦
-		ChangeScene(GAME_SCENE_END);
-	}
-
 	//ƒvƒŒƒCƒ„[‚Ì‘€ì
 		//•Ç‚ğ“Ë‚«”²‚¯‚È‚¢‚æ‚¤‚Éif•¶‚ğ’²®
 	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0)
@@ -392,7 +367,42 @@ VOID PlayProc(VOID)
 
 	//“–‚½‚è”»’è‚ğXV
 	CollUpdatePlayer(&Player);
-	CollUpdatePlayer(&Goal);
+	CollUpdate(&Goal);
+
+	/*
+	//ƒGƒ“ƒhƒV[ƒ“‚ÉØ‚è‘Ö‚¦
+	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
+		//ƒV[ƒ“Ø‚è‘Ö‚¦
+		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
+
+		//ƒvƒŒƒC‰æ–Ê‚ÉØ‚è‘Ö‚¦
+		ChangeScene(GAME_SCENE_END);
+	}
+	*/
+
+	//“–‚½‚è”»’è‚ÌRECTiƒvƒŒƒCƒ„[‚ÆƒS[ƒ‹j
+	Player.coll = { Player.X,Player.Y,Player.X + Player.width,Player.Y + Player.height };
+	Goal.coll = { Goal.X,Goal.Y,Goal.X + Goal.width,Goal.Y + Goal.height };
+
+	//ƒS[ƒ‹”»’è
+	if (Player.IsDraw == TRUE && OnCollision(Player.coll, Goal.coll) == TRUE)
+	{
+		//ƒV[ƒ“Ø‚è‘Ö‚¦
+		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
+
+		//ƒGƒ“ƒh‰æ–Ê‚ÉØ‚è‘Ö‚¦
+		ChangeScene(GAME_SCENE_END);
+
+		//ƒvƒŒƒCƒ„[‚ğ‰Šú‰»
+		Player.X = 0;
+		Player.Y = 0;
+		Player.Xspead = 300;
+		Player.Yspead = 300;
+		Player.IsDraw = TRUE;
+
+		//ˆ—‚ğ‹­§I—¹
+		return;
+	}
 
 	return;
 }
@@ -608,4 +618,25 @@ VOID CollUpdate(CHARACTOR* chara)
 	chara->coll.bottom = chara->Y + chara->height;
 
 	return;
+}
+
+/// <summary>
+/// “–‚½‚Á‚Ä‚¢‚é‚©‚ğ’²‚×‚é
+/// </summary>
+/// <param name=""></param>
+/// <returns>“–‚½‚Á‚Ä‚éEEETRUEb“–‚½‚Á‚Ä‚¢‚È‚¢EEEFALSE</returns>
+BOOL OnCollision(RECT coll1 , RECT coll2)
+{
+	//“–‚½‚Á‚Ä‚¢‚½‚çTRUE
+	if (coll1.left < coll2.right &&
+		coll1.right > coll2.left &&
+		coll1.top < coll2.bottom &&
+		coll1.bottom > coll2.top)
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
 }
