@@ -5,6 +5,7 @@
 #include "FPS.h"        //FPSの処理
 
 //構造体の定義
+//キャラクターの構造体
 struct CHARACTOR
 {
 	int handle = -1;  //画像のハンドル（管理番号）
@@ -19,6 +20,20 @@ struct CHARACTOR
 
 	RECT coll;          //当たり判定の領域（四角）
 	BOOL IsDraw = FALSE;//画像が描画できる？
+};
+
+//動画の構造体
+struct MOVIE
+{
+	int handle = -1;    //動画のハンドル
+	char path[25];      //動画のパス
+
+	int x;              //X位置
+	int y;              //Y位置
+	int width;          //幅
+	int height;         //高さ
+
+	int Volume = 255;   //ボリューム（0～255）
 };
 
 //グローバル変数
@@ -45,11 +60,14 @@ GAME_SCENE GameScene;       //現在のゲームのシーン
 GAME_SCENE OldGameScene;    //前回のゲームのシーン
 GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
-//プレイヤーの構造体
+//プレイヤー
 CHARACTOR Player;
 
-//ゴールの構造体
+//ゴール
 CHARACTOR Goal;
+
+//プレイ画面の背景の動画
+MOVIE playMovie;
 
 //プロトタイプ宣言
 VOID Title(VOID);     //タイトル画面
@@ -107,8 +125,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//最初のシーンはタイトル画面から
 	GameScene = GAME_SCENE_TITLE;
 
+	//全体の初期化
+
+	//プレイ動画の背景を読み込み
+	strcpyDx(playMovie.path, ".\\movie\\PlayMovie.mp4");  //パスのコピー
+	playMovie.handle = LoadGraph(playMovie.path);        //動画の読み込み
+
+	//画像が読み込めなかったときは、エラー(－1)が入る
+	if (playMovie.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //メインのウィンドウタイトル
+			playMovie.path,          //メッセージ本文
+			"画像読み込みエラー",    //メッセージタイトル
+			MB_OK                    //ボタン
+		);
+		DxLib_End();                 //強制終了
+		return -1;                   //エラー終了
+	}
+
+	//画面の幅と高さを取得
+	GetGraphSize(playMovie.handle, &playMovie.width, &playMovie.height);
+
+	//動画のボリューム
+	playMovie.Volume = 255;
+
 	//プレイヤーの画像を読み込み
-	strcpyDx(Player.path, ".\\image\\Player.png");  //パスのコピー
+	strcpyDx(Player.path, ".\\image\\Player.png");   //パスのコピー
 	Player.handle = LoadGraph(Player.path);          //画像の読み込み
 
 	//画像が読み込めなかったときは、エラー(－1)が入る
@@ -138,7 +181,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	CollUpdatePlayer(&Player);  //プレイヤーの当たり判定のアドレス
 
 	//ゴールの画像を読み込み
-	strcpyDx(Goal.path, ".\\image\\Goal.jpeg");  //パスのコピー
+	strcpyDx(Goal.path, ".\\image\\Goal.png");  //パスのコピー
 	Goal.handle = LoadGraph(Goal.path);          //画像の読み込み
 
 	//画像が読み込めなかったときは、エラー(－1)が入る
@@ -228,8 +271,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//終わるときの処理
-	DeleteGraph(Player.handle); //画像をメモリ上から削除
-	DeleteGraph(Goal.handle);   //画像をメモリ上から削除
+	DeleteGraph(Player.handle);      //画像をメモリ上から削除
+	DeleteGraph(Goal.handle);        //画像をメモリ上から削除
+	DeleteGraph(playMovie.handle);   //動画をメモリ上から削除
 
 	DxLib_End();				// ＤＸライブラリ使用の終了処理
 
@@ -413,6 +457,19 @@ VOID PlayProc(VOID)
 /// <param name=""></param>
 VOID PlayDraw(VOID)
 {
+	//背景動画の描画
+	//もし動画が再生されていなかったら
+	if (GetMovieStateToGraph(playMovie.handle) == 0)
+	{
+		//再生する
+		SeekMovieToGraph(playMovie.handle, 0);   //シークバーを最初に戻す
+		PlayMovieToGraph(playMovie.handle);      //動画を再生
+	}
+
+	//動画を描画(画面に合わせて画像を引き延ばす)
+	DrawExtendGraph(0, 0, GAME_WIDTH, GAME_HEIGHT, playMovie.handle, TRUE);
+
+	//ゴールの描画
 	if (Goal.IsDraw == TRUE)
 	{
 		//画像を描画
@@ -425,7 +482,7 @@ VOID PlayDraw(VOID)
 		}
 	}
 
-	//プレイ画面の描画
+	//プレイヤーの描画
 	if (Player.IsDraw == TRUE)
 	{
 		//画像を描画
