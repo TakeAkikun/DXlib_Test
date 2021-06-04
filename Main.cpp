@@ -93,6 +93,9 @@ VOID CollUpdate(CHARACTOR* chara);                               //“–‚½‚è”»’è‚Ì—
 
 BOOL OnCollision(RECT coll1 , RECT coll2);                       //“–‚½‚Á‚Ä‚¢‚é‚©‚ğ’²‚×‚é
 
+BOOL GameLoad(VOID);                                             //ƒQ[ƒ€‘S‘Ì‚Ìƒf[ƒ^‚ğ“Ç‚İ‚İ
+VOID GameInit(VOID);                                             //ƒQ[ƒ€ƒf[ƒ^‚Ì‰Šú‰»
+
 // ƒvƒƒOƒ‰ƒ€‚Í WinMain ‚©‚çn‚Ü‚è‚Ü‚·
 // Windous‚ÌƒvƒƒOƒ‰ƒ~ƒ“ƒO•û–@‚Å“®‚¢‚Ä‚¢‚éBiWinAPIj
 // DxLib‚ÍDirectX‚Æ‚¢‚¤ƒQ[ƒ€ƒvƒƒOƒ‰ƒ~ƒ“ƒO‚ğŠÈ’P‚Ég‚¦‚éd‘g‚İ
@@ -121,94 +124,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//ƒ_ƒuƒ‹ƒoƒbƒtƒ@ƒŠƒ“ƒO—LŒø‰»
 	SetDrawScreen(DX_SCREEN_BACK);
 
+	//ƒQ[ƒ€‘S‘Ì‚Ì‰Šú‰»
+	if (!GameLoad())
+	{
+		//ƒQ[ƒ€ƒf[ƒ^‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚½‚Æ‚«
+		DxLib_End();  //DxLibI—¹
+		return -1;    //ˆÙíI—¹
+	}
+
+	//ƒQ[ƒ€ƒf[ƒ^‚Ì‰Šú‰»
+	GameInit();
 
 	//Å‰‚ÌƒV[ƒ“‚Íƒ^ƒCƒgƒ‹‰æ–Ê‚©‚ç
 	GameScene = GAME_SCENE_TITLE;
-
-	//‘S‘Ì‚Ì‰Šú‰»
-
-	//ƒvƒŒƒC“®‰æ‚Ì”wŒi‚ğ“Ç‚İ‚İ
-	strcpyDx(playMovie.path, ".\\movie\\PlayMovie.mp4");  //ƒpƒX‚ÌƒRƒs[
-	playMovie.handle = LoadGraph(playMovie.path);        //“®‰æ‚Ì“Ç‚İ‚İ
-
-	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
-	if (playMovie.handle == -1)
-	{
-		MessageBox(
-			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-			playMovie.path,          //ƒƒbƒZ[ƒW–{•¶
-			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
-			MB_OK                    //ƒ{ƒ^ƒ“
-		);
-		DxLib_End();                 //‹­§I—¹
-		return -1;                   //ƒGƒ‰[I—¹
-	}
-
-	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
-	GetGraphSize(playMovie.handle, &playMovie.width, &playMovie.height);
-
-	//“®‰æ‚Ìƒ{ƒŠƒ…[ƒ€
-	playMovie.Volume = 255;
-
-	//ƒvƒŒƒCƒ„[‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
-	strcpyDx(Player.path, ".\\image\\Player.png");   //ƒpƒX‚ÌƒRƒs[
-	Player.handle = LoadGraph(Player.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
-
-	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
-	if (Player.handle == -1)
-	{
-		MessageBox(
-			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-			Player.path,             //ƒƒbƒZ[ƒW–{•¶
-			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
-			MB_OK                    //ƒ{ƒ^ƒ“
-		);
-		DxLib_End();                 //‹­§I—¹
-		return -1;                   //ƒGƒ‰[I—¹
-	}
-
-	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
-	GetGraphSize(Player.handle, &Player.width, &Player.height);
-
-	//ƒvƒŒƒCƒ„[‚ğ‰Šú‰»
-	Player.X = 0;
-	Player.Y = 0;
-	Player.Xspead = 300;
-	Player.Yspead = 300;
-	Player.IsDraw = TRUE;
-
-	//“–‚½‚è”»’è‚ğXV
-	CollUpdatePlayer(&Player);  //ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
-
-	//ƒS[ƒ‹‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
-	strcpyDx(Goal.path, ".\\image\\Goal.png");  //ƒpƒX‚ÌƒRƒs[
-	Goal.handle = LoadGraph(Goal.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
-
-	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
-	if (Goal.handle == -1)
-	{
-		MessageBox(
-			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-			Goal.path,               //ƒƒbƒZ[ƒW–{•¶
-			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
-			MB_OK                    //ƒ{ƒ^ƒ“
-		);
-		DxLib_End();                 //‹­§I—¹
-		return -1;                   //ƒGƒ‰[I—¹
-	}
-
-	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
-	GetGraphSize(Goal.handle, &Goal.width, &Goal.height);
-
-	//ƒS[ƒ‹‚ğ‰Šú‰»
-	Goal.X = GAME_WIDTH - Goal.width;
-	Goal.Y = GAME_HEIGHT - Goal.height;
-	Goal.Xspead = 300;
-	Goal.Yspead = 300;
-	Goal.IsDraw = TRUE;
-
-	//“–‚½‚è”»’è‚ğXV
-	CollUpdate(&Goal);  //ƒS[ƒ‹‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
 
 	//–³ŒÀƒ‹[ƒv
 	while (1)
@@ -282,6 +210,110 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 /// <summary>
+/// ƒQ[ƒ€ƒf[ƒ^‚Ì‰Šú‰»
+/// </summary>
+/// <param name=""></param>
+VOID GameInit(VOID)
+{
+	//ƒvƒŒƒCƒ„[‚ğ‰Šú‰»
+	Player.X = 0;
+	Player.Y = 0;
+	Player.Xspead = 300;
+	Player.Yspead = 300;
+	Player.IsDraw = TRUE;
+
+	//“–‚½‚è”»’è‚ğXV
+	CollUpdatePlayer(&Player);  //ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
+
+	//ƒS[ƒ‹‚ğ‰Šú‰»
+	Goal.X = GAME_WIDTH - Goal.width;
+	Goal.Y = GAME_HEIGHT - Goal.height;
+	Goal.Xspead = 300;
+	Goal.Yspead = 300;
+	Goal.IsDraw = TRUE;
+
+	//“–‚½‚è”»’è‚ğXV
+	CollUpdate(&Goal);  //ƒS[ƒ‹‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
+}
+
+
+/// <summary>
+/// ƒQ[ƒ€‘S‘Ì‚Ì‰Šú‰»
+/// </summary>
+/// <returns>“Ç‚İ‚İ¬Œ÷EEETRUEb“Ç‚İ‚İ¸”sEEEFALSE</returns>
+BOOL GameLoad()
+{
+	//ƒvƒŒƒC“®‰æ‚Ì”wŒi‚ğ“Ç‚İ‚İ
+	strcpyDx(playMovie.path, ".\\movie\\PlayMovie.mp4");  //ƒpƒX‚ÌƒRƒs[
+	playMovie.handle = LoadGraph(playMovie.path);        //“®‰æ‚Ì“Ç‚İ‚İ
+
+	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
+	if (playMovie.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
+			playMovie.path,          //ƒƒbƒZ[ƒW–{•¶
+			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
+			MB_OK                    //ƒ{ƒ^ƒ“
+		);
+
+		DxLib_End();                 //‹­§I—¹
+		return FALSE;                //ƒGƒ‰[I—¹
+	}
+
+	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
+	GetGraphSize(playMovie.handle, &playMovie.width, &playMovie.height);
+
+	//“®‰æ‚Ìƒ{ƒŠƒ…[ƒ€
+	playMovie.Volume = 255;
+
+	//ƒvƒŒƒCƒ„[‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
+	strcpyDx(Player.path, ".\\image\\Player.png");   //ƒpƒX‚ÌƒRƒs[
+	Player.handle = LoadGraph(Player.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
+
+	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
+	if (Player.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
+			Player.path,             //ƒƒbƒZ[ƒW–{•¶
+			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
+			MB_OK                    //ƒ{ƒ^ƒ“
+		);
+
+		DxLib_End();                 //‹­§I—¹
+		return FALSE;                //ƒGƒ‰[I—¹
+	}
+
+	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
+	GetGraphSize(Player.handle, &Player.width, &Player.height);
+
+	//ƒS[ƒ‹‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
+	strcpyDx(Goal.path, ".\\image\\Goal.png");  //ƒpƒX‚ÌƒRƒs[
+	Goal.handle = LoadGraph(Goal.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
+
+	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
+	if (Goal.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
+			Goal.path,               //ƒƒbƒZ[ƒW–{•¶
+			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
+			MB_OK                    //ƒ{ƒ^ƒ“
+		);
+
+		DxLib_End();                 //‹­§I—¹
+		return FALSE;                //ƒGƒ‰[I—¹
+	}
+
+	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
+	GetGraphSize(Goal.handle, &Goal.width, &Goal.height);
+
+	return TRUE;        //‘S•”“Ç‚İ‚ß‚½‚çTRUE
+}
+
+
+/// <summary>
 /// ƒV[ƒ“‚ğØ‚è‘Ö‚¦‚éŠÖ”
 /// </summary>
 /// <param name="scene"></param>
@@ -316,6 +348,9 @@ VOID TitleProc(VOID)
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE){
 		//ƒV[ƒ“Ø‚è‘Ö‚¦
 		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
+
+		//ƒQ[ƒ€ƒf[ƒ^‚Ì‰Šú‰»
+		GameInit();
 
 		//ƒvƒŒƒC‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_PLAY);
@@ -436,13 +471,6 @@ VOID PlayProc(VOID)
 
 		//ƒGƒ“ƒh‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_END);
-
-		//ƒvƒŒƒCƒ„[‚ğ‰Šú‰»
-		Player.X = 0;
-		Player.Y = 0;
-		Player.Xspead = 300;
-		Player.Yspead = 300;
-		Player.IsDraw = TRUE;
 
 		//ˆ—‚ğ‹­§I—¹
 		return;
