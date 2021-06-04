@@ -70,6 +70,9 @@ CHARACTOR Goal;
 MOVIE playMovie;
 
 //プロトタイプ宣言
+//キャメルケース・・・単語の先頭を大文字にする命名規則
+//スネークケース・・・単語をアンダーバーでつなぐ命名規則
+
 VOID Title(VOID);     //タイトル画面
 VOID TitleProc(VOID); //タイトル画面（処理）
 VOID TitleDraw(VOID); //タイトル画面（描画）
