@@ -36,6 +36,16 @@ struct MOVIE
 	int Volume = 255;   //ƒ{ƒŠƒ…[ƒ€i0`255j
 };
 
+//‰¹Šy‚Ì\‘¢‘Ì
+struct AUDIO
+{
+	int handle = -1;    //‰¹Šy‚Ìƒnƒ“ƒhƒ‹
+	char path[255];     //‰¹Šy‚ÌƒpƒX
+
+	int Volume = -1;    //ƒ{ƒŠƒ…[ƒ€iMIN 0`255 MAXj
+	int playType = -1;  //BGM or SE
+};
+
 //ƒOƒ[ƒoƒ‹•Ï”
 
 //‰æ–Ê‚ÌØ‚è‘Ö‚¦
@@ -69,6 +79,11 @@ CHARACTOR Goal;
 //ƒvƒŒƒC‰æ–Ê‚Ì”wŒi‚Ì“®‰æ
 MOVIE playMovie;
 
+//‰¹Šy
+AUDIO TitleBGM;
+AUDIO PlayBGM;
+AUDIO EndBGM;
+
 //ƒvƒƒgƒ^ƒCƒvéŒ¾
 //ƒLƒƒƒƒ‹ƒP[ƒXEEE’PŒê‚Ìæ“ª‚ğ‘å•¶š‚É‚·‚é–½–¼‹K‘¥
 //ƒXƒl[ƒNƒP[ƒXEEE’PŒê‚ğƒAƒ“ƒ_[ƒo[‚Å‚Â‚È‚®–½–¼‹K‘¥
@@ -98,6 +113,7 @@ BOOL OnCollision(RECT coll1 , RECT coll2);                       //“–‚½‚Á‚Ä‚¢‚é‚
 
 BOOL GameLoad(VOID);                                             //ƒQ[ƒ€‘S‘Ì‚Ìƒf[ƒ^‚ğ“Ç‚İ‚İ
 VOID GameInit(VOID);                                             //ƒQ[ƒ€ƒf[ƒ^‚Ì‰Šú‰»
+BOOL MusicInput(AUDIO* music,const char* path,int volume ,int playType);//ƒQ[ƒ€‚ÌBGM‚ğ‰Šú‰»
 
 // ƒvƒƒOƒ‰ƒ€‚Í WinMain ‚©‚çn‚Ü‚è‚Ü‚·
 // Windous‚ÌƒvƒƒOƒ‰ƒ~ƒ“ƒO•û–@‚Å“®‚¢‚Ä‚¢‚éBiWinAPIj
@@ -260,7 +276,6 @@ BOOL GameLoad()
 			MB_OK                    //ƒ{ƒ^ƒ“
 		);
 
-		DxLib_End();                 //‹­§I—¹
 		return FALSE;                //ƒGƒ‰[I—¹
 	}
 
@@ -284,7 +299,6 @@ BOOL GameLoad()
 			MB_OK                    //ƒ{ƒ^ƒ“
 		);
 
-		DxLib_End();                 //‹­§I—¹
 		return FALSE;                //ƒGƒ‰[I—¹
 	}
 
@@ -305,14 +319,53 @@ BOOL GameLoad()
 			MB_OK                    //ƒ{ƒ^ƒ“
 		);
 
-		DxLib_End();                 //‹­§I—¹
 		return FALSE;                //ƒGƒ‰[I—¹
 	}
 
 	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
 	GetGraphSize(Goal.handle, &Goal.width, &Goal.height);
 
+	//‰¹Šy‚ğ“Ç‚İ‚İ
+	if (!MusicInput(&TitleBGM, ".\\audio\\OP.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!MusicInput(&PlayBGM, ".\\audio\\PLAY.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!MusicInput(&EndBGM, ".\\audio\\ED.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+
+
 	return TRUE;        //‘S•”“Ç‚İ‚ß‚½‚çTRUE
+}
+
+
+/// <summary>
+/// ‰¹Šy‚ğƒƒ‚ƒŠ‚É“Ç‚İ‚İ
+/// </summary>
+/// <param name="music">Audio\‘¢‘Ì‚ÌƒAƒhƒŒƒX</param>
+/// <param name="path">Audio‚Ì‰¹ŠyƒpƒX</param>
+/// <param name="volume">ƒ{ƒŠƒ…[ƒ€</param>
+/// <param name="playType">DX_PLAYTYPE_LOOP or DX_PLAYTYPE_BACK</param>
+/// <returns></returns>
+BOOL MusicInput(AUDIO* music, const char* path, int volume, int playType)
+{
+	//‰¹Šy‚ğ“Ç‚İ‚İ
+	strcpyDx(music->path, path);  //ƒpƒX‚ÌƒRƒs[
+	music->handle = LoadSoundMem(music->path);          //‰¹Šy‚Ì“Ç‚İ‚İ
+
+	//‰¹Šy‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
+	if (music->handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),       //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
+			music->path,               //ƒƒbƒZ[ƒW–{•¶
+			"‰¹Šy“Ç‚İ‚İƒGƒ‰[",        //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
+			MB_OK                        //ƒ{ƒ^ƒ“
+		);
+
+		return FALSE;                    //ƒGƒ‰[I—¹
+	}
+
+	music->playType = playType;//‰¹Šy‚ğƒ‹[ƒv‚³‚¹‚é
+	music->Volume = volume;               //MAX‚ª255
+
+	return TRUE;
 }
 
 
@@ -352,11 +405,23 @@ VOID TitleProc(VOID)
 		//ƒV[ƒ“Ø‚è‘Ö‚¦
 		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
 
+		//BGM‚ğ~‚ß‚é
+		StopSoundMem(TitleBGM.handle);
+
 		//ƒQ[ƒ€ƒf[ƒ^‚Ì‰Šú‰»
 		GameInit();
 
 		//ƒvƒŒƒC‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_PLAY);
+
+		return;
+	}
+
+	//BGM‚ª—¬‚ê‚Ä‚¢‚È‚¢
+	if (CheckSoundMem(TitleBGM.handle) == 0)
+	{
+		//BGM‚ğ—¬‚·
+		PlaySoundMem(TitleBGM.handle, TitleBGM.playType);
 	}
 
 	return;
@@ -472,11 +537,21 @@ VOID PlayProc(VOID)
 		//ƒV[ƒ“Ø‚è‘Ö‚¦
 		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
 
+		//BGM‚ğ~‚ß‚é
+		StopSoundMem(PlayBGM.handle);
+
 		//ƒGƒ“ƒh‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_END);
 
 		//ˆ—‚ğ‹­§I—¹
 		return;
+	}
+
+	//BGM‚ª—¬‚ê‚Ä‚¢‚È‚¢
+	if (CheckSoundMem(PlayBGM.handle) == 0)
+	{
+		//BGM‚ğ—¬‚·
+		PlaySoundMem(PlayBGM.handle, TitleBGM.playType);
 	}
 
 	return;
@@ -557,9 +632,22 @@ VOID EndProc(VOID)
 		//ƒV[ƒ“Ø‚è‘Ö‚¦
 		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
 
+		//BGM‚ğ~‚ß‚é
+		StopSoundMem(EndBGM.handle);
+
 		//ƒ^ƒCƒgƒ‹‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_TITLE);
+
+		return;
 	}
+
+	//BGM‚ª—¬‚ê‚Ä‚¢‚È‚¢
+	if (CheckSoundMem(EndBGM.handle) == 0)
+	{
+		//BGM‚ğ—¬‚·
+		PlaySoundMem(EndBGM.handle, TitleBGM.playType);
+	}
+
 
 	return;
 }
