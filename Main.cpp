@@ -83,6 +83,8 @@ MOVIE playMovie;
 AUDIO TitleBGM;
 AUDIO PlayBGM;
 AUDIO EndBGM;
+AUDIO moveSE;
+AUDIO okSE;
 
 //プロトタイプ宣言
 //キャメルケース・・・単語の先頭を大文字にする命名規則
@@ -221,6 +223,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	DeleteGraph(Player.handle);      //画像をメモリ上から削除
 	DeleteGraph(Goal.handle);        //画像をメモリ上から削除
 	DeleteGraph(playMovie.handle);   //動画をメモリ上から削除
+	DeleteGraph(TitleBGM.handle);    //音楽をメモリ上から削除
+	DeleteGraph(PlayBGM.handle);     //音楽をメモリ上から削除
+	DeleteGraph(EndBGM.handle);      //音楽をメモリ上から削除
+	DeleteGraph(moveSE.handle);      //音楽をメモリ上から削除
+	DeleteGraph(okSE.handle);        //音楽をメモリ上から削除
 
 	DxLib_End();				// ＤＸライブラリ使用の終了処理
 
@@ -326,9 +333,13 @@ BOOL GameLoad()
 	GetGraphSize(Goal.handle, &Goal.width, &Goal.height);
 
 	//音楽を読み込み
-	if (!MusicInput(&TitleBGM, ".\\audio\\OP.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
-	if (!MusicInput(&PlayBGM, ".\\audio\\PLAY.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
-	if (!MusicInput(&EndBGM, ".\\audio\\ED.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!MusicInput(&TitleBGM, ".\\audio\\OP.mp3", 150, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!MusicInput(&PlayBGM, ".\\audio\\PLAY.mp3", 150, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!MusicInput(&EndBGM, ".\\audio\\ED.mp3", 150, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!MusicInput(&moveSE, ".\\SE\\move.mp3", 150, DX_PLAYTYPE_BACK)) { return FALSE; }
+	if (!MusicInput(&okSE, ".\\SE\\OK.mp3", 150, DX_PLAYTYPE_BACK)) { return FALSE; }
+
+
 
 
 	return TRUE;        //全部読み込めたらTRUE
@@ -354,7 +365,7 @@ BOOL MusicInput(AUDIO* music, const char* path, int volume, int playType)
 	{
 		MessageBox(
 			GetMainWindowHandle(),       //メインのウィンドウタイトル
-			music->path,               //メッセージ本文
+			music->path,                 //メッセージ本文
 			"音楽読み込みエラー",        //メッセージタイトル
 			MB_OK                        //ボタン
 		);
@@ -362,7 +373,7 @@ BOOL MusicInput(AUDIO* music, const char* path, int volume, int playType)
 		return FALSE;                    //エラー終了
 	}
 
-	music->playType = playType;//音楽をループさせる
+	music->playType = playType;           //音楽をループさせる
 	music->Volume = volume;               //MAXが255
 
 	return TRUE;
@@ -404,6 +415,9 @@ VOID TitleProc(VOID)
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE){
 		//シーン切り替え
 		//次のシーンの初期化をココで行うと楽
+
+		//SE
+		PlaySoundMem(okSE.handle, okSE.playType);
 
 		//BGMを止める
 		StopSoundMem(TitleBGM.handle);
@@ -457,6 +471,7 @@ VOID Play(VOID)
 /// <param name=""></param>
 VOID PlayProc(VOID)
 {
+
 	//プレイヤーの操作
 		//壁を突き抜けないようにif文を調整
 	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0)
@@ -468,6 +483,12 @@ VOID PlayProc(VOID)
 		{
 			Player.Y = 0;
 		}
+
+		//効果音
+		if (CheckSoundMem(moveSE.handle) == 0)
+		{
+			PlaySoundMem(moveSE.handle, moveSE.playType);
+		}
 	}
 	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.Y < GAME_HEIGHT - Player.height)
 	{
@@ -477,6 +498,12 @@ VOID PlayProc(VOID)
 		if (Player.Y > GAME_HEIGHT - Player.height)
 		{
 			Player.Y = GAME_HEIGHT - Player.height;
+		}
+
+		//効果音
+		if (CheckSoundMem(moveSE.handle) == 0)
+		{
+			PlaySoundMem(moveSE.handle, moveSE.playType);
 		}
 	}
 	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.X > 0)
@@ -488,6 +515,12 @@ VOID PlayProc(VOID)
 		{
 			Player.X = 0;
 		}
+
+		//効果音
+		if (CheckSoundMem(moveSE.handle) == 0)
+		{
+			PlaySoundMem(moveSE.handle, moveSE.playType);
+		}
 	}
 	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.X < GAME_WIDTH - Player.width)
 	{
@@ -497,6 +530,12 @@ VOID PlayProc(VOID)
 		if (Player.X > GAME_WIDTH - Player.width)
 		{
 			Player.X = GAME_WIDTH - Player.width;
+		}
+
+		//効果音
+		if (CheckSoundMem(moveSE.handle) == 0)
+		{
+			PlaySoundMem(moveSE.handle, moveSE.playType);
 		}
 	}
 
@@ -631,6 +670,9 @@ VOID EndProc(VOID)
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
 		//シーン切り替え
 		//次のシーンの初期化をココで行うと楽
+
+		//SE
+		PlaySoundMem(okSE.handle, okSE.playType);
 
 		//BGMを止める
 		StopSoundMem(EndBGM.handle);
