@@ -70,8 +70,16 @@ GAME_SCENE GameScene;       //現在のゲームのシーン
 GAME_SCENE OldGameScene;    //前回のゲームのシーン
 GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
+//エンド画面の時のフラグ
+int GameEndFlag = -1;
+
 //プレイヤー
 CHARACTOR Player;
+
+//敵
+CHARACTOR Enemy1;
+CHARACTOR Enemy2;
+CHARACTOR Enemy3;
 
 //ゴール
 CHARACTOR Goal;
@@ -221,6 +229,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//終わるときの処理
 	DeleteGraph(Player.handle);      //画像をメモリ上から削除
+	DeleteGraph(Enemy1.handle);      //画像をメモリ上から削除
+	DeleteGraph(Enemy2.handle);      //画像をメモリ上から削除
+	DeleteGraph(Enemy3.handle);      //画像をメモリ上から削除
 	DeleteGraph(Goal.handle);        //画像をメモリ上から削除
 	DeleteGraph(playMovie.handle);   //動画をメモリ上から削除
 	DeleteGraph(TitleBGM.handle);    //音楽をメモリ上から削除
@@ -250,6 +261,36 @@ VOID GameInit(VOID)
 
 	//当たり判定を更新
 	CollUpdatePlayer(&Player);  //プレイヤーの当たり判定のアドレス
+
+	//敵１を初期化
+	Enemy1.X = 350;
+	Enemy1.Y = 200;
+	Enemy1.Xspead = 10;
+	Enemy1.Yspead = 10;
+	Enemy1.IsDraw = TRUE;
+
+	//当たり判定の更新
+	CollUpdatePlayer(&Enemy1);  //敵の当たり判定のアドレス
+
+	//敵２を初期化
+	Enemy2.X = 500;
+	Enemy2.Y = 400;
+	Enemy2.Xspead = 10;
+	Enemy2.Yspead = 10;
+	Enemy2.IsDraw = TRUE;
+
+	//当たり判定の更新
+	CollUpdatePlayer(&Enemy2);  //敵の当たり判定のアドレス
+
+	//敵３を初期化
+	Enemy3.X = 900;
+	Enemy3.Y = 500;
+	Enemy3.Xspead = 10;
+	Enemy3.Yspead = 10;
+	Enemy3.IsDraw = TRUE;
+
+	//当たり判定の更新
+	CollUpdatePlayer(&Enemy3);  //敵の当たり判定のアドレス
 
 	//ゴールを初期化
 	Goal.X = GAME_WIDTH - Goal.width;
@@ -312,6 +353,66 @@ BOOL GameLoad()
 	//画面の幅と高さを取得
 	GetGraphSize(Player.handle, &Player.width, &Player.height);
 
+	//敵１の画像を読み込み
+	strcpyDx(Enemy1.path, ".\\image\\Enemy1.png");   //パスのコピー
+	Enemy1.handle = LoadGraph(Enemy1.path);          //画像の読み込み
+
+	//画像が読み込めなかったときは、エラー(－1)が入る
+	if (Enemy1.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //メインのウィンドウタイトル
+			Enemy1.path,             //メッセージ本文
+			"画像読み込みエラー",    //メッセージタイトル
+			MB_OK                    //ボタン
+		);
+
+		return FALSE;                //エラー終了
+	}
+
+	//画面の幅と高さを取得
+	GetGraphSize(Enemy1.handle, &Enemy1.width, &Enemy1.height);
+
+	//敵２の画像を読み込み
+	strcpyDx(Enemy2.path, ".\\image\\Enemy2.png");   //パスのコピー
+	Enemy2.handle = LoadGraph(Enemy2.path);          //画像の読み込み
+
+	//画像が読み込めなかったときは、エラー(－1)が入る
+	if (Enemy2.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //メインのウィンドウタイトル
+			Enemy2.path,             //メッセージ本文
+			"画像読み込みエラー",    //メッセージタイトル
+			MB_OK                    //ボタン
+		);
+
+		return FALSE;                //エラー終了
+	}
+
+	//画面の幅と高さを取得
+	GetGraphSize(Enemy2.handle, &Enemy2.width, &Enemy2.height);
+
+	//敵３の画像を読み込み
+	strcpyDx(Enemy3.path, ".\\image\\Enemy3.png");   //パスのコピー
+	Enemy3.handle = LoadGraph(Enemy3.path);          //画像の読み込み
+
+	//画像が読み込めなかったときは、エラー(－1)が入る
+	if (Enemy3.handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //メインのウィンドウタイトル
+			Enemy3.path,             //メッセージ本文
+			"画像読み込みエラー",    //メッセージタイトル
+			MB_OK                    //ボタン
+		);
+
+		return FALSE;                //エラー終了
+	}
+
+	//画面の幅と高さを取得
+	GetGraphSize(Enemy3.handle, &Enemy3.width, &Enemy3.height);
+
 	//ゴールの画像を読み込み
 	strcpyDx(Goal.path, ".\\image\\Goal.png");  //パスのコピー
 	Goal.handle = LoadGraph(Goal.path);          //画像の読み込み
@@ -338,8 +439,6 @@ BOOL GameLoad()
 	if (!MusicInput(&EndBGM, ".\\audio\\ED.mp3", 150, DX_PLAYTYPE_LOOP)) { return FALSE; }
 	if (!MusicInput(&moveSE, ".\\SE\\move.mp3", 150, DX_PLAYTYPE_BACK)) { return FALSE; }
 	if (!MusicInput(&okSE, ".\\SE\\OK.mp3", 150, DX_PLAYTYPE_BACK)) { return FALSE; }
-
-
 
 
 	return TRUE;        //全部読み込めたらTRUE
@@ -473,6 +572,7 @@ VOID PlayProc(VOID)
 {
 
 	//プレイヤーの操作
+	
 		//壁を突き抜けないようにif文を調整
 	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0)
 	{
@@ -490,6 +590,7 @@ VOID PlayProc(VOID)
 			PlaySoundMem(moveSE.handle, moveSE.playType);
 		}
 	}
+
 	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.Y < GAME_HEIGHT - Player.height)
 	{
 		Player.Y += Player.Yspead * fps.DeltaTime;   //下に移動
@@ -506,6 +607,7 @@ VOID PlayProc(VOID)
 			PlaySoundMem(moveSE.handle, moveSE.playType);
 		}
 	}
+
 	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.X > 0)
 	{
 		Player.X -= Player.Xspead * fps.DeltaTime;   //左に移動
@@ -522,6 +624,7 @@ VOID PlayProc(VOID)
 			PlaySoundMem(moveSE.handle, moveSE.playType);
 		}
 	}
+
 	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.X < GAME_WIDTH - Player.width)
 	{
 		Player.X += Player.Xspead * fps.DeltaTime;   //右に移動
@@ -539,6 +642,29 @@ VOID PlayProc(VOID)
 		}
 	}
 
+	//敵の動き
+	
+	//敵1
+	Enemy1.X += Enemy1.Xspead;
+	if (Enemy1.X < 0 || Enemy1.X + Enemy1.width > GAME_WIDTH)
+	{
+		Enemy1.Xspead = -Enemy1.Xspead;
+	}
+
+	//敵2
+	Enemy2.Y += Enemy2.Yspead;
+	if (Enemy2.Y < 0 || Enemy2.Y + Enemy2.width > GAME_HEIGHT)
+	{
+		Enemy2.Yspead = -Enemy2.Yspead;
+	}
+
+	//敵3
+	Enemy3.Y += Enemy3.Yspead;
+	if (Enemy3.Y < 0 || Enemy3.Y + Enemy3.width > GAME_HEIGHT)
+	{
+		Enemy3.Yspead = -Enemy3.Yspead;
+	}
+
 	// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
 	if (KeyDown(KEY_INPUT_1) == TRUE)
 	{
@@ -553,6 +679,9 @@ VOID PlayProc(VOID)
 
 	//当たり判定を更新
 	CollUpdatePlayer(&Player);
+	CollUpdatePlayer(&Enemy1);
+	CollUpdatePlayer(&Enemy2);
+	CollUpdatePlayer(&Enemy3);
 	CollUpdate(&Goal);
 
 	/*
@@ -568,6 +697,9 @@ VOID PlayProc(VOID)
 
 	//当たり判定のRECT（プレイヤーとゴール）
 	Player.coll = { Player.X,Player.Y,Player.X + Player.width,Player.Y + Player.height };
+	Enemy1.coll = { Enemy1.X,Enemy1.Y,Enemy1.X + Enemy1.width,Enemy1.Y + Enemy1.height };
+	Enemy2.coll = { Enemy2.X,Enemy2.Y,Enemy2.X + Enemy2.width,Enemy2.Y + Enemy2.height };
+	Enemy3.coll = { Enemy3.X,Enemy3.Y,Enemy3.X + Enemy3.width,Enemy3.Y + Enemy3.height };
 	Goal.coll = { Goal.X,Goal.Y,Goal.X + Goal.width,Goal.Y + Goal.height };
 
 	//ゴール判定
@@ -575,6 +707,65 @@ VOID PlayProc(VOID)
 	{
 		//シーン切り替え
 		//次のシーンの初期化をココで行うと楽
+
+		//ゲームクリアの時のフラグを入れる
+		GameEndFlag = GAME_CLEAR;
+
+		//BGMを止める
+		StopSoundMem(PlayBGM.handle);
+
+		//エンド画面に切り替え
+		ChangeScene(GAME_SCENE_END);
+
+		//処理を強制終了
+		return;
+	}
+
+	//ゲームオーバー判定
+	//敵１
+	if (Player.IsDraw == TRUE && OnCollision(Player.coll, Enemy1.coll) == TRUE)
+	{
+		//シーン切り替え
+		//次のシーンの初期化をココで行うと楽
+
+		//ゲームオーバーの時のフラグを入れる
+		GameEndFlag = GAME_OVER;
+
+		//BGMを止める
+		StopSoundMem(PlayBGM.handle);
+
+		//エンド画面に切り替え
+		ChangeScene(GAME_SCENE_END);
+
+		//処理を強制終了
+		return;
+	}
+	//敵２
+	if (Player.IsDraw == TRUE && OnCollision(Player.coll, Enemy2.coll) == TRUE)
+	{
+		//シーン切り替え
+		//次のシーンの初期化をココで行うと楽
+
+		//ゲームオーバーの時のフラグを入れる
+		GameEndFlag = GAME_OVER;
+
+		//BGMを止める
+		StopSoundMem(PlayBGM.handle);
+
+		//エンド画面に切り替え
+		ChangeScene(GAME_SCENE_END);
+
+		//処理を強制終了
+		return;
+	}
+	//敵３
+	if (Player.IsDraw == TRUE && OnCollision(Player.coll, Enemy3.coll) == TRUE)
+	{
+		//シーン切り替え
+		//次のシーンの初期化をココで行うと楽
+
+		//ゲームオーバーの時のフラグを入れる
+		GameEndFlag = GAME_OVER;
 
 		//BGMを止める
 		StopSoundMem(PlayBGM.handle);
@@ -640,6 +831,45 @@ VOID PlayDraw(VOID)
 		}
 	}
 
+	//敵１の描画
+	if (Enemy1.IsDraw == TRUE)
+	{
+		//画像を描画
+		DrawGraph(Enemy1.X, Enemy1.Y, Enemy1.handle, TRUE);
+
+		if (GAME_DEBUG == TRUE)
+		{
+			//四角を描画
+			DrawBox(Enemy1.coll.left, Enemy1.coll.top, Enemy1.coll.right, Enemy1.coll.bottom, GetColor(255, 0, 0), FALSE);
+		}
+	}
+
+	//敵２の描画
+	if (Enemy2.IsDraw == TRUE)
+	{
+		//画像を描画
+		DrawGraph(Enemy2.X, Enemy2.Y, Enemy2.handle, TRUE);
+
+		if (GAME_DEBUG == TRUE)
+		{
+			//四角を描画
+			DrawBox(Enemy2.coll.left, Enemy2.coll.top, Enemy2.coll.right, Enemy2.coll.bottom, GetColor(255, 0, 0), FALSE);
+		}
+	}
+
+	//敵３の描画
+	if (Enemy3.IsDraw == TRUE)
+	{
+		//画像を描画
+		DrawGraph(Enemy3.X, Enemy3.Y, Enemy3.handle, TRUE);
+
+		if (GAME_DEBUG == TRUE)
+		{
+			//四角を描画
+			DrawBox(Enemy3.coll.left, Enemy3.coll.top, Enemy3.coll.right, Enemy3.coll.bottom, GetColor(255, 0, 0), FALSE);
+		}
+	}
+
 	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
 	DrawString(0, 20, "画面右端までたどり着こう！", GetColor(0, 0, 0));
 	DrawString(0, 40, "（1でスピードアップ：2でスピードダウン）", GetColor(0, 0, 0));
@@ -701,7 +931,19 @@ VOID EndProc(VOID)
 VOID EndDraw(VOID)
 {
 	DrawString(0, 0, "エンド画面", GetColor(0, 0, 0));
-	DrawString(GAME_HEIGHT / 2, GAME_WIDTH / 2, "クリアおめでとう！", GetColor(255, 0, 0));
+
+	switch (GameEndFlag)
+	{
+	case GAME_CLEAR:
+		DrawString(GAME_HEIGHT / 2, GAME_WIDTH / 2, "クリアおめでとう！", GetColor(255, 0, 0));
+		break;
+	case GAME_OVER:
+		DrawString(GAME_HEIGHT / 2, GAME_WIDTH / 2, "危ないよぅ、やり直し！", GetColor(255, 0, 0));
+		break;
+	default:
+		break;
+	}
+	
 	return;
 }
 
