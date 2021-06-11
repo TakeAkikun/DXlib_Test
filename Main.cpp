@@ -5,8 +5,9 @@
 #include "FPS.h"        //FPS‚Ìˆ—
 
 //\‘¢‘Ì‚Ì’è‹`
-//ƒLƒƒƒ‰ƒNƒ^[‚Ì\‘¢‘Ì
-struct CHARACTOR
+
+//‰æ‘œ‚Ì\‘¢‘Ì
+struct IMAGE
 {
 	int handle = -1;  //‰æ‘œ‚Ìƒnƒ“ƒhƒ‹iŠÇ—”Ô†j
 	char path[255];   //‰æ‘œ‚ÌêŠiƒpƒXj
@@ -15,11 +16,17 @@ struct CHARACTOR
 	int Y;            //YˆÊ’u
 	int width;        //•
 	int height;       //‚‚³
+
+	BOOL IsDraw = FALSE;//‰æ‘œ‚ª•`‰æ‚Å‚«‚éH
+};
+
+//ƒLƒƒƒ‰ƒNƒ^[‚Ì\‘¢‘Ì
+struct CHARACTOR
+{
+	IMAGE img;        //‰æ‘œ‚Ì\‘¢‘Ì
 	int Xspead = 1;   //ˆÚ“®‘¬“x
 	int Yspead = 1;   //ˆÚ“®‘¬“x
-
-	RECT coll;          //“–‚½‚è”»’è‚Ì—ÌˆæilŠpj
-	BOOL IsDraw = FALSE;//‰æ‘œ‚ª•`‰æ‚Å‚«‚éH
+	RECT coll;        //“–‚½‚è”»’è‚Ì—Ìˆæ(lŠp)
 };
 
 //“®‰æ‚Ì\‘¢‘Ì
@@ -84,6 +91,12 @@ CHARACTOR Enemy3;
 //ƒS[ƒ‹
 CHARACTOR Goal;
 
+//ƒƒS
+IMAGE TitleLogo;
+IMAGE TitleEnter;
+IMAGE EndClear;
+IMAGE EndOver;
+
 //ƒvƒŒƒC‰æ–Ê‚Ì”wŒi‚Ì“®‰æ
 MOVIE playMovie;
 
@@ -123,7 +136,8 @@ BOOL OnCollision(RECT coll1 , RECT coll2);                       //“–‚½‚Á‚Ä‚¢‚é‚
 
 BOOL GameLoad(VOID);                                             //ƒQ[ƒ€‘S‘Ì‚Ìƒf[ƒ^‚ğ“Ç‚İ‚İ
 VOID GameInit(VOID);                                             //ƒQ[ƒ€ƒf[ƒ^‚Ì‰Šú‰»
-BOOL MusicInput(AUDIO* music,const char* path,int volume ,int playType);//ƒQ[ƒ€‚ÌBGM‚ğ‰Šú‰»
+BOOL ImageInput(IMAGE* Image, const char* path);                 //ƒQ[ƒ€‚Ì‰æ‘œ“Ç‚İ‚İ
+BOOL MusicInput(AUDIO* music,const char* path,int volume ,int playType);//ƒQ[ƒ€‚ÌBGM“Ç‚İ‚İ
 
 // ƒvƒƒOƒ‰ƒ€‚Í WinMain ‚©‚çn‚Ü‚è‚Ü‚·
 // Windous‚ÌƒvƒƒOƒ‰ƒ~ƒ“ƒO•û–@‚Å“®‚¢‚Ä‚¢‚éBiWinAPIj
@@ -228,11 +242,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//I‚í‚é‚Æ‚«‚Ìˆ—
-	DeleteGraph(Player.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(Enemy1.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(Enemy2.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(Enemy3.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(Goal.handle);        //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(Player.img.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(Enemy1.img.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(Enemy2.img.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(Enemy3.img.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(Goal.img.handle);        //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
 	DeleteGraph(playMovie.handle);   //“®‰æ‚ğƒƒ‚ƒŠã‚©‚çíœ
 	DeleteGraph(TitleBGM.handle);    //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
 	DeleteGraph(PlayBGM.handle);     //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
@@ -253,51 +267,51 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 VOID GameInit(VOID)
 {
 	//ƒvƒŒƒCƒ„[‚ğ‰Šú‰»
-	Player.X = 0;
-	Player.Y = 0;
+	Player.img.X = 0;
+	Player.img.Y = 0;
 	Player.Xspead = 300;
 	Player.Yspead = 300;
-	Player.IsDraw = TRUE;
+	Player.img.IsDraw = TRUE;
 
 	//“–‚½‚è”»’è‚ğXV
 	CollUpdatePlayer(&Player);  //ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
 
 	//“G‚P‚ğ‰Šú‰»
-	Enemy1.X = 350;
-	Enemy1.Y = 200;
+	Enemy1.img.X = 350;
+	Enemy1.img.Y = 200;
 	Enemy1.Xspead = 10;
 	Enemy1.Yspead = 10;
-	Enemy1.IsDraw = TRUE;
+	Enemy1.img.IsDraw = TRUE;
 
 	//“–‚½‚è”»’è‚ÌXV
 	CollUpdatePlayer(&Enemy1);  //“G‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
 
 	//“G‚Q‚ğ‰Šú‰»
-	Enemy2.X = 500;
-	Enemy2.Y = 400;
+	Enemy2.img.X = 500;
+	Enemy2.img.Y = 400;
 	Enemy2.Xspead = 10;
 	Enemy2.Yspead = 10;
-	Enemy2.IsDraw = TRUE;
+	Enemy2.img.IsDraw = TRUE;
 
 	//“–‚½‚è”»’è‚ÌXV
 	CollUpdatePlayer(&Enemy2);  //“G‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
 
 	//“G‚R‚ğ‰Šú‰»
-	Enemy3.X = 900;
-	Enemy3.Y = 500;
+	Enemy3.img.X = 900;
+	Enemy3.img.Y = 500;
 	Enemy3.Xspead = 10;
 	Enemy3.Yspead = 10;
-	Enemy3.IsDraw = TRUE;
+	Enemy3.img.IsDraw = TRUE;
 
 	//“–‚½‚è”»’è‚ÌXV
 	CollUpdatePlayer(&Enemy3);  //“G‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
 
 	//ƒS[ƒ‹‚ğ‰Šú‰»
-	Goal.X = GAME_WIDTH - Goal.width;
-	Goal.Y = GAME_HEIGHT - Goal.height;
+	Goal.img.X = GAME_WIDTH - Goal.img.width;
+	Goal.img.Y = GAME_HEIGHT - Goal.img.height;
 	Goal.Xspead = 300;
 	Goal.Yspead = 300;
-	Goal.IsDraw = TRUE;
+	Goal.img.IsDraw = TRUE;
 
 	//“–‚½‚è”»’è‚ğXV
 	CollUpdate(&Goal);  //ƒS[ƒ‹‚Ì“–‚½‚è”»’è‚ÌƒAƒhƒŒƒX
@@ -333,105 +347,12 @@ BOOL GameLoad()
 	//“®‰æ‚Ìƒ{ƒŠƒ…[ƒ€
 	playMovie.Volume = 255;
 
-	//ƒvƒŒƒCƒ„[‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
-	strcpyDx(Player.path, ".\\image\\Player.png");   //ƒpƒX‚ÌƒRƒs[
-	Player.handle = LoadGraph(Player.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
-
-	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
-	if (Player.handle == -1)
-	{
-		MessageBox(
-			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-			Player.path,             //ƒƒbƒZ[ƒW–{•¶
-			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
-			MB_OK                    //ƒ{ƒ^ƒ“
-		);
-
-		return FALSE;                //ƒGƒ‰[I—¹
-	}
-
-	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
-	GetGraphSize(Player.handle, &Player.width, &Player.height);
-
-	//“G‚P‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
-	strcpyDx(Enemy1.path, ".\\image\\Enemy1.png");   //ƒpƒX‚ÌƒRƒs[
-	Enemy1.handle = LoadGraph(Enemy1.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
-
-	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
-	if (Enemy1.handle == -1)
-	{
-		MessageBox(
-			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-			Enemy1.path,             //ƒƒbƒZ[ƒW–{•¶
-			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
-			MB_OK                    //ƒ{ƒ^ƒ“
-		);
-
-		return FALSE;                //ƒGƒ‰[I—¹
-	}
-
-	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
-	GetGraphSize(Enemy1.handle, &Enemy1.width, &Enemy1.height);
-
-	//“G‚Q‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
-	strcpyDx(Enemy2.path, ".\\image\\Enemy2.png");   //ƒpƒX‚ÌƒRƒs[
-	Enemy2.handle = LoadGraph(Enemy2.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
-
-	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
-	if (Enemy2.handle == -1)
-	{
-		MessageBox(
-			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-			Enemy2.path,             //ƒƒbƒZ[ƒW–{•¶
-			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
-			MB_OK                    //ƒ{ƒ^ƒ“
-		);
-
-		return FALSE;                //ƒGƒ‰[I—¹
-	}
-
-	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
-	GetGraphSize(Enemy2.handle, &Enemy2.width, &Enemy2.height);
-
-	//“G‚R‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
-	strcpyDx(Enemy3.path, ".\\image\\Enemy3.png");   //ƒpƒX‚ÌƒRƒs[
-	Enemy3.handle = LoadGraph(Enemy3.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
-
-	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
-	if (Enemy3.handle == -1)
-	{
-		MessageBox(
-			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-			Enemy3.path,             //ƒƒbƒZ[ƒW–{•¶
-			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
-			MB_OK                    //ƒ{ƒ^ƒ“
-		);
-
-		return FALSE;                //ƒGƒ‰[I—¹
-	}
-
-	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
-	GetGraphSize(Enemy3.handle, &Enemy3.width, &Enemy3.height);
-
-	//ƒS[ƒ‹‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
-	strcpyDx(Goal.path, ".\\image\\Goal.png");  //ƒpƒX‚ÌƒRƒs[
-	Goal.handle = LoadGraph(Goal.path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
-
-	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
-	if (Goal.handle == -1)
-	{
-		MessageBox(
-			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-			Goal.path,               //ƒƒbƒZ[ƒW–{•¶
-			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
-			MB_OK                    //ƒ{ƒ^ƒ“
-		);
-
-		return FALSE;                //ƒGƒ‰[I—¹
-	}
-
-	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
-	GetGraphSize(Goal.handle, &Goal.width, &Goal.height);
+	//‰æ‘œ‚ğ“Ç‚İ‚İ
+	if (!ImageInput(&Player.img, ".\\image\\Player.png")) { FALSE; }
+	if (!ImageInput(&Enemy1.img, ".\\image\\Enemy1.png")) { FALSE; }
+	if (!ImageInput(&Enemy2.img, ".\\image\\Enemy1.png")) { FALSE; }
+	if (!ImageInput(&Enemy3.img, ".\\image\\Enemy1.png")) { FALSE; }
+	if (!ImageInput(&Goal.img, ".\\image\\Goal.png")) { FALSE; }
 
 	//‰¹Šy‚ğ“Ç‚İ‚İ
 	if (!MusicInput(&TitleBGM, ".\\audio\\OP.mp3", 150, DX_PLAYTYPE_LOOP)) { return FALSE; }
@@ -446,13 +367,43 @@ BOOL GameLoad()
 
 
 /// <summary>
+/// ‰æ‘œ‚ğƒƒ‚ƒŠ‚É“Ç‚İ‚İ
+/// </summary>
+/// <param name="Image">Image\‘¢‘Ì‚ÌƒAƒhƒŒƒX</param>
+/// <param name="path">Image‚Ì‰æ‘œƒpƒX</param>
+/// <returns>TRUE or FALSE</returns>
+BOOL ImageInput(IMAGE* Image, const char* path)
+{
+	//ƒS[ƒ‹‚Ì‰æ‘œ‚ğ“Ç‚İ‚İ
+	strcpyDx(Image->path, path);  //ƒpƒX‚ÌƒRƒs[
+	Image->handle = LoadGraph(Image->path);          //‰æ‘œ‚Ì“Ç‚İ‚İ
+
+	//‰æ‘œ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚ÍAƒGƒ‰[(|1)‚ª“ü‚é
+	if (Image->handle == -1)
+	{
+		MessageBox(
+			GetMainWindowHandle(),   //ƒƒCƒ“‚ÌƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
+			Image->path,             //ƒƒbƒZ[ƒW–{•¶
+			"‰æ‘œ“Ç‚İ‚İƒGƒ‰[",    //ƒƒbƒZ[ƒWƒ^ƒCƒgƒ‹
+			MB_OK                    //ƒ{ƒ^ƒ“
+		);
+
+		return FALSE;                //ƒGƒ‰[I—¹
+	}
+
+	//‰æ–Ê‚Ì•‚Æ‚‚³‚ğæ“¾
+	GetGraphSize(Image->handle, &Image->width, &Image->height);
+}
+
+
+/// <summary>
 /// ‰¹Šy‚ğƒƒ‚ƒŠ‚É“Ç‚İ‚İ
 /// </summary>
 /// <param name="music">Audio\‘¢‘Ì‚ÌƒAƒhƒŒƒX</param>
 /// <param name="path">Audio‚Ì‰¹ŠyƒpƒX</param>
 /// <param name="volume">ƒ{ƒŠƒ…[ƒ€</param>
 /// <param name="playType">DX_PLAYTYPE_LOOP or DX_PLAYTYPE_BACK</param>
-/// <returns></returns>
+/// <returns>TRUE or FALSE</returns>
 BOOL MusicInput(AUDIO* music, const char* path, int volume, int playType)
 {
 	//‰¹Šy‚ğ“Ç‚İ‚İ
@@ -574,14 +525,14 @@ VOID PlayProc(VOID)
 	//ƒvƒŒƒCƒ„[‚Ì‘€ì
 	
 		//•Ç‚ğ“Ë‚«”²‚¯‚È‚¢‚æ‚¤‚Éif•¶‚ğ’²®
-	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.Y > 0)
+	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.img.Y > 0)
 	{
-		Player.Y -= Player.Yspead * fps.DeltaTime;   //ã‚ÉˆÚ“®
+		Player.img.Y -= Player.Yspead * fps.DeltaTime;   //ã‚ÉˆÚ“®
 
 		//ƒXƒs[ƒh‚‚·‚¬‚Ä‚ß‚è‚Ş‚Ì‚ğ–h~
-		if (Player.Y < 0)
+		if (Player.img.Y < 0)
 		{
-			Player.Y = 0;
+			Player.img.Y = 0;
 		}
 
 		//Œø‰Ê‰¹
@@ -591,14 +542,14 @@ VOID PlayProc(VOID)
 		}
 	}
 
-	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.Y < GAME_HEIGHT - Player.height)
+	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.img.Y < GAME_HEIGHT - Player.img.height)
 	{
-		Player.Y += Player.Yspead * fps.DeltaTime;   //‰º‚ÉˆÚ“®
+		Player.img.Y += Player.Yspead * fps.DeltaTime;   //‰º‚ÉˆÚ“®
 
 		//ƒXƒs[ƒh‚‚·‚¬‚Ä‚ß‚è‚Ş‚Ì‚ğ–h~
-		if (Player.Y > GAME_HEIGHT - Player.height)
+		if (Player.img.Y > GAME_HEIGHT - Player.img.height)
 		{
-			Player.Y = GAME_HEIGHT - Player.height;
+			Player.img.Y = GAME_HEIGHT - Player.img.height;
 		}
 
 		//Œø‰Ê‰¹
@@ -608,14 +559,14 @@ VOID PlayProc(VOID)
 		}
 	}
 
-	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.X > 0)
+	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.img.X > 0)
 	{
-		Player.X -= Player.Xspead * fps.DeltaTime;   //¶‚ÉˆÚ“®
+		Player.img.X -= Player.Xspead * fps.DeltaTime;   //¶‚ÉˆÚ“®
 
 		//ƒXƒs[ƒh‚‚·‚¬‚Ä‚ß‚è‚Ş‚Ì‚ğ–h~
-		if (Player.X < 0)
+		if (Player.img.X < 0)
 		{
-			Player.X = 0;
+			Player.img.X = 0;
 		}
 
 		//Œø‰Ê‰¹
@@ -625,14 +576,14 @@ VOID PlayProc(VOID)
 		}
 	}
 
-	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.X < GAME_WIDTH - Player.width)
+	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.img.X < GAME_WIDTH - Player.img.width)
 	{
-		Player.X += Player.Xspead * fps.DeltaTime;   //‰E‚ÉˆÚ“®
+		Player.img.X += Player.Xspead * fps.DeltaTime;   //‰E‚ÉˆÚ“®
 
 		//ƒXƒs[ƒh‚‚·‚¬‚Ä‚ß‚è‚Ş‚Ì‚ğ–h~
-		if (Player.X > GAME_WIDTH - Player.width)
+		if (Player.img.X > GAME_WIDTH - Player.img.width)
 		{
-			Player.X = GAME_WIDTH - Player.width;
+			Player.img.X = GAME_WIDTH - Player.img.width;
 		}
 
 		//Œø‰Ê‰¹
@@ -645,22 +596,22 @@ VOID PlayProc(VOID)
 	//“G‚Ì“®‚«
 	
 	//“G1
-	Enemy1.X += Enemy1.Xspead;
-	if (Enemy1.X < 0 || Enemy1.X + Enemy1.width > GAME_WIDTH)
+	Enemy1.img.X += Enemy1.Xspead;
+	if (Enemy1.img.X < 0 || Enemy1.img.X + Enemy1.img.width > GAME_WIDTH)
 	{
 		Enemy1.Xspead = -Enemy1.Xspead;
 	}
 
 	//“G2
-	Enemy2.Y += Enemy2.Yspead;
-	if (Enemy2.Y < 0 || Enemy2.Y + Enemy2.width > GAME_HEIGHT)
+	Enemy2.img.Y += Enemy2.Yspead;
+	if (Enemy2.img.Y < 0 || Enemy2.img.Y + Enemy2.img.width > GAME_HEIGHT)
 	{
 		Enemy2.Yspead = -Enemy2.Yspead;
 	}
 
 	//“G3
-	Enemy3.Y += Enemy3.Yspead;
-	if (Enemy3.Y < 0 || Enemy3.Y + Enemy3.width > GAME_HEIGHT)
+	Enemy3.img.Y += Enemy3.Yspead;
+	if (Enemy3.img.Y < 0 || Enemy3.img.Y + Enemy3.img.width > GAME_HEIGHT)
 	{
 		Enemy3.Yspead = -Enemy3.Yspead;
 	}
@@ -696,14 +647,14 @@ VOID PlayProc(VOID)
 	*/
 
 	//“–‚½‚è”»’è‚ÌRECTiƒvƒŒƒCƒ„[‚ÆƒS[ƒ‹j
-	Player.coll = { Player.X,Player.Y,Player.X + Player.width,Player.Y + Player.height };
-	Enemy1.coll = { Enemy1.X,Enemy1.Y,Enemy1.X + Enemy1.width,Enemy1.Y + Enemy1.height };
-	Enemy2.coll = { Enemy2.X,Enemy2.Y,Enemy2.X + Enemy2.width,Enemy2.Y + Enemy2.height };
-	Enemy3.coll = { Enemy3.X,Enemy3.Y,Enemy3.X + Enemy3.width,Enemy3.Y + Enemy3.height };
-	Goal.coll = { Goal.X,Goal.Y,Goal.X + Goal.width,Goal.Y + Goal.height };
+	Player.coll = { Player.img.X,Player.img.Y,Player.img.X + Player.img.width,Player.img.Y + Player.img.height };
+	Enemy1.coll = { Enemy1.img.X,Enemy1.img.Y,Enemy1.img.X + Enemy1.img.width,Enemy1.img.Y + Enemy1.img.height };
+	Enemy2.coll = { Enemy2.img.X,Enemy2.img.Y,Enemy2.img.X + Enemy2.img.width,Enemy2.img.Y + Enemy2.img.height };
+	Enemy3.coll = { Enemy3.img.X,Enemy3.img.Y,Enemy3.img.X + Enemy3.img.width,Enemy3.img.Y + Enemy3.img.height };
+	Goal.coll = { Goal.img.X,Goal.img.Y,Goal.img.X + Goal.img.width,Goal.img.Y + Goal.img.height };
 
 	//ƒS[ƒ‹”»’è
-	if (Player.IsDraw == TRUE && OnCollision(Player.coll, Goal.coll) == TRUE)
+	if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Goal.coll) == TRUE)
 	{
 		//ƒV[ƒ“Ø‚è‘Ö‚¦
 		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
@@ -714,6 +665,9 @@ VOID PlayProc(VOID)
 		//BGM‚ğ~‚ß‚é
 		StopSoundMem(PlayBGM.handle);
 
+		//SE‚ª—¬‚ê‚Ä‚¢‚½‚ç~‚ß‚é
+		if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
+
 		//ƒGƒ“ƒh‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_END);
 
@@ -723,7 +677,7 @@ VOID PlayProc(VOID)
 
 	//ƒQ[ƒ€ƒI[ƒo[”»’è
 	//“G‚P
-	if (Player.IsDraw == TRUE && OnCollision(Player.coll, Enemy1.coll) == TRUE)
+	if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy1.coll) == TRUE)
 	{
 		//ƒV[ƒ“Ø‚è‘Ö‚¦
 		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
@@ -733,6 +687,9 @@ VOID PlayProc(VOID)
 
 		//BGM‚ğ~‚ß‚é
 		StopSoundMem(PlayBGM.handle);
+
+		//SE‚ª—¬‚ê‚Ä‚¢‚½‚ç~‚ß‚é
+		if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
 
 		//ƒGƒ“ƒh‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_END);
@@ -741,7 +698,7 @@ VOID PlayProc(VOID)
 		return;
 	}
 	//“G‚Q
-	if (Player.IsDraw == TRUE && OnCollision(Player.coll, Enemy2.coll) == TRUE)
+	if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy2.coll) == TRUE)
 	{
 		//ƒV[ƒ“Ø‚è‘Ö‚¦
 		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
@@ -751,6 +708,9 @@ VOID PlayProc(VOID)
 
 		//BGM‚ğ~‚ß‚é
 		StopSoundMem(PlayBGM.handle);
+
+		//SE‚ª—¬‚ê‚Ä‚¢‚½‚ç~‚ß‚é
+		if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
 
 		//ƒGƒ“ƒh‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_END);
@@ -759,7 +719,7 @@ VOID PlayProc(VOID)
 		return;
 	}
 	//“G‚R
-	if (Player.IsDraw == TRUE && OnCollision(Player.coll, Enemy3.coll) == TRUE)
+	if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy3.coll) == TRUE)
 	{
 		//ƒV[ƒ“Ø‚è‘Ö‚¦
 		//Ÿ‚ÌƒV[ƒ“‚Ì‰Šú‰»‚ğƒRƒR‚Ås‚¤‚ÆŠy
@@ -769,6 +729,9 @@ VOID PlayProc(VOID)
 
 		//BGM‚ğ~‚ß‚é
 		StopSoundMem(PlayBGM.handle);
+
+		//SE‚ª—¬‚ê‚Ä‚¢‚½‚ç~‚ß‚é
+		if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
 
 		//ƒGƒ“ƒh‰æ–Ê‚ÉØ‚è‘Ö‚¦
 		ChangeScene(GAME_SCENE_END);
@@ -806,10 +769,10 @@ VOID PlayDraw(VOID)
 	DrawExtendGraph(0, 0, GAME_WIDTH, GAME_HEIGHT, playMovie.handle, TRUE);
 
 	//ƒS[ƒ‹‚Ì•`‰æ
-	if (Goal.IsDraw == TRUE)
+	if (Goal.img.IsDraw == TRUE)
 	{
 		//‰æ‘œ‚ğ•`‰æ
-		DrawGraph(Goal.X, Goal.Y, Goal.handle, TRUE);
+		DrawGraph(Goal.img.X, Goal.img.Y, Goal.img.handle, TRUE);
 
 		if (GAME_DEBUG == TRUE)
 		{
@@ -819,10 +782,10 @@ VOID PlayDraw(VOID)
 	}
 
 	//ƒvƒŒƒCƒ„[‚Ì•`‰æ
-	if (Player.IsDraw == TRUE)
+	if (Player.img.IsDraw == TRUE)
 	{
 		//‰æ‘œ‚ğ•`‰æ
-		DrawGraph(Player.X, Player.Y, Player.handle, TRUE);
+		DrawGraph(Player.img.X, Player.img.Y, Player.img.handle, TRUE);
 
 		if (GAME_DEBUG == TRUE)
 		{
@@ -832,10 +795,10 @@ VOID PlayDraw(VOID)
 	}
 
 	//“G‚P‚Ì•`‰æ
-	if (Enemy1.IsDraw == TRUE)
+	if (Enemy1.img.IsDraw == TRUE)
 	{
 		//‰æ‘œ‚ğ•`‰æ
-		DrawGraph(Enemy1.X, Enemy1.Y, Enemy1.handle, TRUE);
+		DrawGraph(Enemy1.img.X, Enemy1.img.Y, Enemy1.img.handle, TRUE);
 
 		if (GAME_DEBUG == TRUE)
 		{
@@ -845,10 +808,10 @@ VOID PlayDraw(VOID)
 	}
 
 	//“G‚Q‚Ì•`‰æ
-	if (Enemy2.IsDraw == TRUE)
+	if (Enemy2.img.IsDraw == TRUE)
 	{
 		//‰æ‘œ‚ğ•`‰æ
-		DrawGraph(Enemy2.X, Enemy2.Y, Enemy2.handle, TRUE);
+		DrawGraph(Enemy2.img.X, Enemy2.img.Y, Enemy2.img.handle, TRUE);
 
 		if (GAME_DEBUG == TRUE)
 		{
@@ -858,10 +821,10 @@ VOID PlayDraw(VOID)
 	}
 
 	//“G‚R‚Ì•`‰æ
-	if (Enemy3.IsDraw == TRUE)
+	if (Enemy3.img.IsDraw == TRUE)
 	{
 		//‰æ‘œ‚ğ•`‰æ
-		DrawGraph(Enemy3.X, Enemy3.Y, Enemy3.handle, TRUE);
+		DrawGraph(Enemy3.img.X, Enemy3.img.Y, Enemy3.img.handle, TRUE);
 
 		if (GAME_DEBUG == TRUE)
 		{
@@ -1058,10 +1021,10 @@ VOID ChangeDraw(VOID)
 /// <param name="coll">“–‚½‚è”»’è‚Ì—Ìˆæ</param>
 VOID CollUpdatePlayer(CHARACTOR* chara)
 {
-	chara->coll.left = chara->X;
-	chara->coll.top = chara->Y;
-	chara->coll.right = chara->X + chara->width;
-	chara->coll.bottom = chara->Y + chara->height;
+	chara->coll.left = chara->img.X;
+	chara->coll.top = chara->img.Y;
+	chara->coll.right = chara->img.X + chara->img.width;
+	chara->coll.bottom = chara->img.Y + chara->img.height;
 
 	return;
 }
@@ -1072,10 +1035,10 @@ VOID CollUpdatePlayer(CHARACTOR* chara)
 /// <param name="coll">“–‚½‚è”»’è‚Ì—Ìˆæ</param>
 VOID CollUpdate(CHARACTOR* chara)
 {
-	chara->coll.left = chara->X;
-	chara->coll.top = chara->Y;
-	chara->coll.right = chara->X + chara->width;
-	chara->coll.bottom = chara->Y + chara->height;
+	chara->coll.left = chara->img.X;
+	chara->coll.top = chara->img.Y;
+	chara->coll.right = chara->img.X + chara->img.width;
+	chara->coll.bottom = chara->img.Y + chara->img.height;
 
 	return;
 }
