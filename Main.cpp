@@ -141,6 +141,8 @@ VOID CollUpdate(CHARACTOR* chara);                               //“–‚½‚è”»’è‚Ì—
 
 BOOL OnCollision(RECT coll1 , RECT coll2);                       //“–‚½‚Á‚Ä‚¢‚é‚©‚ğ’²‚×‚é
 
+VOID ChangeBGM(AUDIO* music);                                    //BGM‚Ì‰¹—Ê•ÏX
+
 BOOL GameLoad(VOID);                                             //ƒQ[ƒ€‘S‘Ì‚Ìƒf[ƒ^‚ğ“Ç‚İ‚İ
 VOID GameInit(VOID);                                             //ƒQ[ƒ€ƒf[ƒ^‚Ì‰Šú‰»
 BOOL ImageInput(IMAGE* Image, const char* path);                 //ƒQ[ƒ€‚Ì‰æ‘œ“Ç‚İ‚İ
@@ -258,12 +260,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	DeleteGraph(Enemy2.img.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
 	DeleteGraph(Enemy3.img.handle);      //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
 	DeleteGraph(Goal.img.handle);        //‰æ‘œ‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(playMovie.handle);   //“®‰æ‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(TitleBGM.handle);    //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(PlayBGM.handle);     //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(EndBGM.handle);      //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(moveSE.handle);      //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
-	DeleteGraph(okSE.handle);        //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(playMovie.handle);       //“®‰æ‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(TitleBGM.handle);        //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(PlayBGM.handle);         //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(EndBGM.handle);          //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(moveSE.handle);          //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
+	DeleteGraph(okSE.handle);            //‰¹Šy‚ğƒƒ‚ƒŠã‚©‚çíœ
 
 	DxLib_End();				// ‚c‚wƒ‰ƒCƒuƒ‰ƒŠg—p‚ÌI—¹ˆ—
 
@@ -364,6 +366,10 @@ BOOL GameLoad()
 	playMovie.Volume = 255;
 
 	//‰æ‘œ‚ğ“Ç‚İ‚İ
+	if (!ImageInput(&TitleLogo, ".\\image\\Title.png")) { FALSE; }
+	if (!ImageInput(&TitleEnter, ".\\image\\PushEnter.png")) { FALSE; }
+	if (!ImageInput(&EndClear, ".\\image\\GameClear.png")) { FALSE; }
+	if (!ImageInput(&EndOver, ".\\image\\GameOver.png")) { FALSE; }
 	if (!ImageInput(&Player.img, ".\\image\\Player.png")) { FALSE; }
 	if (!ImageInput(&Enemy1.img, ".\\image\\Enemy1.png")) { FALSE; }
 	if (!ImageInput(&Enemy2.img, ".\\image\\Enemy1.png")) { FALSE; }
@@ -444,8 +450,9 @@ BOOL MusicInput(AUDIO* music, const char* path, int volume, int playType)
 		return FALSE;                    //ƒGƒ‰[I—¹
 	}
 
-	music->playType = playType;           //‰¹Šy‚ğƒ‹[ƒv‚³‚¹‚é
-	music->Volume = volume;               //MAX‚ª255
+	music->playType = playType;                          //‰¹Šy‚ğƒ‹[ƒv‚³‚¹‚é
+	music->Volume = volume;                              //MAX‚ª255
+	ChangeVolumeSoundMem(music->Volume, music->handle);  //BGM‚Ìƒ{ƒŠƒ…[ƒ€‚ğ•ÏX
 
 	return TRUE;
 }
@@ -519,6 +526,9 @@ VOID TitleProc(VOID)
 		PlaySoundMem(TitleBGM.handle, TitleBGM.playType);
 	}
 
+	//‰¹—Ê‚Ì•ÏX
+	ChangeBGM(&TitleBGM);
+
 	return;
 }
 
@@ -529,7 +539,8 @@ VOID TitleProc(VOID)
 VOID TitleDraw(VOID)
 {
 	DrawString(0, 0, "ƒ^ƒCƒgƒ‹‰æ–Ê", GetColor(0, 0, 0));
-	DrawString(GAME_HEIGHT / 2, GAME_WIDTH / 2, "EnterƒL[‚ÅƒQ[ƒ€ŠJn", GetColor(255, 0, 0));
+	DrawString(0, 20, "O:‰¹—ÊUP P:‰¹—ÊDOWN", GetColor(0, 0, 0));
+
 	return;
 }
 
@@ -782,6 +793,9 @@ VOID PlayProc(VOID)
 		PlaySoundMem(PlayBGM.handle, TitleBGM.playType);
 	}
 
+	//‰¹—Ê‚Ì•ÏX
+	ChangeBGM(&PlayBGM);
+
 	return;
 }
 
@@ -868,9 +882,10 @@ VOID PlayDraw(VOID)
 		}
 	}
 
-	DrawString(0, 0, "ƒvƒŒƒC‰æ–Ê", GetColor(0, 0, 0));
-	DrawString(0, 20, "‰æ–Ê‰E’[‚Ü‚Å‚½‚Ç‚è’…‚±‚¤I", GetColor(0, 0, 0));
-	DrawString(0, 40, "i1‚ÅƒXƒs[ƒhƒAƒbƒvF2‚ÅƒXƒs[ƒhƒ_ƒEƒ“j", GetColor(0, 0, 0));
+	DrawString(0, 0, "ƒvƒŒƒC‰æ–Ê", GetColor(255, 255, 255));
+	DrawString(0, 20, "O:‰¹—ÊUP P:‰¹—ÊDOWN", GetColor(255, 255, 255));
+	DrawString(0, 40, "‰æ–Ê‰E’[‚Ü‚Å‚½‚Ç‚è’…‚±‚¤I", GetColor(255, 255, 255));
+	DrawString(0, 60, "i1‚ÅƒXƒs[ƒhƒAƒbƒvF2‚ÅƒXƒs[ƒhƒ_ƒEƒ“j", GetColor(255, 255, 255));
 
 	return;
 }
@@ -922,6 +937,8 @@ VOID EndProc(VOID)
 		PlaySoundMem(EndBGM.handle, TitleBGM.playType);
 	}
 
+	//‰¹—Ê‚Ì•ÏX
+	ChangeBGM(&EndBGM);
 
 	return;
 }
@@ -933,6 +950,7 @@ VOID EndProc(VOID)
 VOID EndDraw(VOID)
 {
 	DrawString(0, 0, "ƒGƒ“ƒh‰æ–Ê", GetColor(0, 0, 0));
+	DrawString(0, 20, "O:‰¹—ÊUP P:‰¹—ÊDOWN", GetColor(0, 0, 0));
 
 	switch (GameEndFlag)
 	{
@@ -1054,6 +1072,7 @@ VOID ChangeDraw(VOID)
 	SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
 
 	DrawString(0, 0, "Ø‚è‘Ö‚¦‰æ–Ê", GetColor(0, 0, 0));
+
 	return;
 }
 
@@ -1109,4 +1128,47 @@ BOOL OnCollision(RECT coll1 , RECT coll2)
 	{
 		return FALSE;
 	}
+}
+
+
+//=====================================================================================================================
+//          ƒRƒR‚©‚çBGMŠÖŒW          
+//=====================================================================================================================
+
+/// <summary>
+/// BGM‚Ì‰¹—Ê‚ğ•ÏX‚·‚é
+/// </summary>
+/// <param name="music">•ÏX‚µ‚½‚¢BGM‚ÌAUDIO\‘¢‘Ì‚ÌƒAƒhƒŒƒX</param>
+VOID ChangeBGM(AUDIO* music)
+{
+	//‰¹—Ê‚ª‚O`‚Q‚T‚T‚Ì‚Éì“®
+	if (0 <= music->Volume && music->Volume <= 255)
+	{
+		if (KeyDown(KEY_INPUT_O) == TRUE)
+		{
+			ChangeVolumeSoundMem(music->Volume + 5, music->handle);
+			music->Volume += 5;
+		}
+
+		if (KeyDown(KEY_INPUT_P) == TRUE)
+		{
+			ChangeVolumeSoundMem(music->Volume - 5, music->handle);
+			music->Volume -= 5;
+		}
+	}
+
+	//‰¹—Ê‚ª”ÍˆÍŠO‚¾‚Á‚½‚ç”ÍˆÍ“à‚É–ß‚·
+	if (0 >= music->Volume)
+	{
+		ChangeVolumeSoundMem(0, music->handle);
+		music->Volume = 0;
+	}
+
+	if (music->Volume >= 255)
+	{
+		ChangeVolumeSoundMem(255, music->handle);
+		music->Volume = 255;
+	}
+
+	return;
 }
