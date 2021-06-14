@@ -76,6 +76,10 @@ int fadeInCntInit = fadeTimeMax;            //初期値
 int fadeInCnt = fadeInCntInit;              //フェードインのカウンタ
 int fadeInCutMax = fadeTimeMax;             //フェードインのカウンタXAX
 
+//タイトルロゴのだんだん濃くなるアレ
+float TitleLogoCnt = 0;           //カウンタ
+BOOL TitleLogoBrink = FALSE;      //完全に表示されたか？
+
 //PushEnterの点滅
 int PushEnterCnt = 0;           //カウンタ
 const int PushEnterCntMax = 60; //カウンタMAX
@@ -88,6 +92,9 @@ GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
 //エンド画面の時のフラグ
 int GameEndFlag = -1;
+
+//メニュー画面が表示されているかのフラグ
+int MenuFlag = FALSE;
 
 //プレイヤー
 CHARACTOR Player;
@@ -343,6 +350,10 @@ VOID GameInit(VOID)
 	TitleLogo.X = GAME_WIDTH / 2 - TitleLogo.width / 2;  //中央揃え
 	TitleLogo.Y = 10;
 
+	//タイトルロゴのだんだん濃くなるアレ
+	TitleLogoCnt = 0;          //カウンタ
+	TitleLogoBrink = FALSE;    //完全に表示されたか？
+
 	//PushEnterの位置
 	TitleEnter.X = GAME_WIDTH / 2 - TitleEnter.width / 2;//中央揃え
 	TitleEnter.Y = GAME_HEIGHT - TitleEnter.height - 100;
@@ -524,6 +535,39 @@ VOID Title(VOID)
 /// <param name=""></param>
 VOID TitleProc(VOID)
 {
+	//タイトルロゴの降りてくる演出
+	//Max値まで待つ
+	if (TitleLogoCnt < TitleLogo.Y)
+	{
+		TitleLogoCnt += 0.1;
+	}
+	else
+	{
+		
+		TitleLogoBrink = TRUE;
+	}
+
+
+	//タイトルロゴの演出が終わった後に表示
+	if (TitleLogoBrink == TRUE)
+	{
+
+		//PushEnterの点滅
+		//MAX値まで待つ
+		if (PushEnterCnt < PushEnterCntMax)
+		{
+			PushEnterCnt++;
+		}
+		else
+		{
+			if (PushEnterBrink == TRUE) PushEnterBrink = FALSE;
+			else if (PushEnterBrink == FALSE) PushEnterBrink = TRUE;
+
+			PushEnterCnt = 0;
+		}
+
+	}
+
 	//プレイシーンに切り替え
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE){
 		//シーン切り替え
@@ -564,45 +608,56 @@ VOID TitleProc(VOID)
 VOID TitleDraw(VOID)
 {
 	//タイトルロゴの描画
-	//画像を描画
-	DrawGraph(TitleLogo.X, TitleLogo.Y, TitleLogo.handle, TRUE);
-
-	//MAX値まで待つ
-	if (PushEnterCnt < PushEnterCntMax)
-	{
-		PushEnterCnt++;
-	}
-	else
-	{
-		if (PushEnterBrink == TRUE) PushEnterBrink = FALSE;
-		else if (PushEnterBrink == FALSE) PushEnterBrink = TRUE;
-
-		PushEnterCnt = 0;
-	}
-
-	//PushEnterを点滅
-	if (PushEnterBrink == TRUE)
+	
+	if (TitleLogoBrink == FALSE)
 	{
 		//半透明にする
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)PushEnterCnt / PushEnterCntMax) * 255);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)TitleLogoCnt / TitleLogo.Y) * 255);
 
-		//四角形を描画
-		DrawGraph(TitleEnter.X, TitleEnter.Y, TitleEnter.handle, TRUE);
+		//ロゴを描画
+		DrawGraph(TitleLogo.X, TitleLogoCnt, TitleLogo.handle, TRUE);
 
 		//半透明終了
 		SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
 	}
-
-	if (PushEnterBrink == FALSE)
+	
+	//ロゴを描画
+	if (TitleLogoBrink == TRUE)
 	{
-		//半透明にする
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)(PushEnterCntMax - PushEnterCnt) / PushEnterCntMax) * 255);
+		DrawGraph(TitleLogo.X, TitleLogoCnt, TitleLogo.handle, TRUE);
+	}
 
-		//四角形を描画
-		DrawGraph(TitleEnter.X, TitleEnter.Y, TitleEnter.handle, TRUE);
 
-		//半透明終了
-		SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
+	//タイトルロゴの演出が終わった後に表示
+	if (TitleLogoBrink == TRUE)
+	{
+
+		//PushEnterを点滅
+
+		if (PushEnterBrink == TRUE)
+		{
+			//半透明にする
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)PushEnterCnt / PushEnterCntMax) * 255);
+
+			//ロゴを描画
+			DrawGraph(TitleEnter.X, TitleEnter.Y, TitleEnter.handle, TRUE);
+
+			//半透明終了
+			SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
+		}
+
+		if (PushEnterBrink == FALSE)
+		{
+			//半透明にする
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)(PushEnterCntMax - PushEnterCnt) / PushEnterCntMax) * 255);
+
+			//ロゴを描画
+			DrawGraph(TitleEnter.X, TitleEnter.Y, TitleEnter.handle, TRUE);
+
+			//半透明終了
+			SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
+		}
+
 	}
 
 	DrawString(0, 0, "タイトル画面", GetColor(0, 0, 0));
@@ -1022,21 +1077,40 @@ VOID EndDraw(VOID)
 	switch (GameEndFlag)
 	{
 	case GAME_CLEAR:
-		//ゲームクリアの描画
+		//=======================================================
+		//     ゲームクリアの描画     
+		//=======================================================
+		
 		//画像を描画
 		DrawGraph(EndClear.X, EndClear.Y, EndClear.handle, TRUE);
+
 		break;
+
+
 	case GAME_OVER:
-		//ゲームオーバーの描画
+		//=======================================================
+		//     ゲームオーバーの描画     
+		//=======================================================
+		
 		//画像を描画
 		DrawGraph(EndOver.X, EndOver.Y, EndOver.handle, TRUE);
+
 		break;
+
+
 	default:
 		break;
 	}
 	
 	return;
 }
+
+
+//=====================================================================================================================
+//          ココからメニュー画面          
+//=====================================================================================================================
+
+
 
 
 //=====================================================================================================================
