@@ -76,6 +76,11 @@ int fadeInCntInit = fadeTimeMax;            //初期値
 int fadeInCnt = fadeInCntInit;              //フェードインのカウンタ
 int fadeInCutMax = fadeTimeMax;             //フェードインのカウンタXAX
 
+//PushEnterの点滅
+int PushEnterCnt = 0;           //カウンタ
+const int PushEnterCntMax = 60; //カウンタMAX
+BOOL PushEnterBrink = FALSE;    //点滅しているか？
+
 //シーンを管理する変数
 GAME_SCENE GameScene;       //現在のゲームのシーン
 GAME_SCENE OldGameScene;    //前回のゲームのシーン
@@ -333,6 +338,26 @@ VOID GameInit(VOID)
 
 	//当たり判定を更新
 	CollUpdate(&Goal);  //ゴールの当たり判定のアドレス
+
+	//タイトルロゴの位置
+	TitleLogo.X = GAME_WIDTH / 2 - TitleLogo.width / 2;  //中央揃え
+	TitleLogo.Y = 10;
+
+	//PushEnterの位置
+	TitleEnter.X = GAME_WIDTH / 2 - TitleEnter.width / 2;//中央揃え
+	TitleEnter.Y = GAME_HEIGHT - TitleEnter.height - 100;
+
+	//PushEnterの点滅
+	PushEnterCnt = 0;         //カウンタ
+	PushEnterBrink = FALSE;  //点滅しているか？
+
+	//クリアロゴの位置
+	EndClear.X = GAME_WIDTH / 2 - EndClear.width / 2;    //中央揃え
+	EndClear.Y = GAME_WIDTH / 2 - EndClear.height / 2 - 300;//中央揃え
+
+	//オーバーロゴの位置
+	EndOver.X = GAME_WIDTH / 2 - EndOver.width / 2;      //中央揃え
+	EndOver.Y = GAME_WIDTH / 2 - EndOver.height / 2 - 300;//中央揃え
 }
 
 
@@ -538,6 +563,48 @@ VOID TitleProc(VOID)
 /// <param name=""></param>
 VOID TitleDraw(VOID)
 {
+	//タイトルロゴの描画
+	//画像を描画
+	DrawGraph(TitleLogo.X, TitleLogo.Y, TitleLogo.handle, TRUE);
+
+	//MAX値まで待つ
+	if (PushEnterCnt < PushEnterCntMax)
+	{
+		PushEnterCnt++;
+	}
+	else
+	{
+		if (PushEnterBrink == TRUE) PushEnterBrink = FALSE;
+		else if (PushEnterBrink == FALSE) PushEnterBrink = TRUE;
+
+		PushEnterCnt = 0;
+	}
+
+	//PushEnterを点滅
+	if (PushEnterBrink == TRUE)
+	{
+		//半透明にする
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)PushEnterCnt / PushEnterCntMax) * 255);
+
+		//四角形を描画
+		DrawGraph(TitleEnter.X, TitleEnter.Y, TitleEnter.handle, TRUE);
+
+		//半透明終了
+		SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
+	}
+
+	if (PushEnterBrink == FALSE)
+	{
+		//半透明にする
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)(PushEnterCntMax - PushEnterCnt) / PushEnterCntMax) * 255);
+
+		//四角形を描画
+		DrawGraph(TitleEnter.X, TitleEnter.Y, TitleEnter.handle, TRUE);
+
+		//半透明終了
+		SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
+	}
+
 	DrawString(0, 0, "タイトル画面", GetColor(0, 0, 0));
 	DrawString(0, 20, "O:音量UP P:音量DOWN", GetColor(0, 0, 0));
 
@@ -955,10 +1022,14 @@ VOID EndDraw(VOID)
 	switch (GameEndFlag)
 	{
 	case GAME_CLEAR:
-		DrawString(GAME_HEIGHT / 2, GAME_WIDTH / 2, "クリアおめでとう！", GetColor(255, 0, 0));
+		//ゲームクリアの描画
+		//画像を描画
+		DrawGraph(EndClear.X, EndClear.Y, EndClear.handle, TRUE);
 		break;
 	case GAME_OVER:
-		DrawString(GAME_HEIGHT / 2, GAME_WIDTH / 2, "危ないよぅ、やり直し！", GetColor(255, 0, 0));
+		//ゲームオーバーの描画
+		//画像を描画
+		DrawGraph(EndOver.X, EndOver.Y, EndOver.handle, TRUE);
 		break;
 	default:
 		break;
