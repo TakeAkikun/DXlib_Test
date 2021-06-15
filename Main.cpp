@@ -90,11 +90,11 @@ GAME_SCENE GameScene;       //現在のゲームのシーン
 GAME_SCENE OldGameScene;    //前回のゲームのシーン
 GAME_SCENE NextGameScene;   //次回のゲームのシーン
 
+//メニュー欄の表示フラグ
+BOOL MenuFlag = FALSE;    //メニュー欄を表示するか？
+
 //エンド画面の時のフラグ
 int GameEndFlag = -1;
-
-//メニュー画面が表示されているかのフラグ
-int MenuFlag = FALSE;
 
 //プレイヤー
 CHARACTOR Player;
@@ -146,19 +146,21 @@ VOID Change(VOID);					                             //切り替え画面
 VOID ChangeProc(VOID);				                             //切り替え画面（処理）
 VOID ChangeDraw(VOID);				                             //切り替え画面（描画）
 
+VOID PrintMenu(int Volum);			                             //メニュー画面（描画）
+
 VOID ChangeScene(GAME_SCENE seane);                              //シーン切り替え
 
 VOID CollUpdatePlayer(CHARACTOR* chara);                         //当たり判定の領域を更新(プレイヤー)
 VOID CollUpdate(CHARACTOR* chara);                               //当たり判定の領域を更新
 
-BOOL OnCollision(RECT coll1 , RECT coll2);                       //当たっているかを調べる
+BOOL OnCollision(RECT coll1, RECT coll2);                       //当たっているかを調べる
 
 VOID ChangeBGM(AUDIO* music);                                    //BGMの音量変更
 
 BOOL GameLoad(VOID);                                             //ゲーム全体のデータを読み込み
 VOID GameInit(VOID);                                             //ゲームデータの初期化
 BOOL ImageInput(IMAGE* Image, const char* path);                 //ゲームの画像読み込み
-BOOL MusicInput(AUDIO* music,const char* path,int volume ,int playType);//ゲームのBGM読み込み
+BOOL MusicInput(AUDIO* music, const char* path, int volume, int playType);//ゲームのBGM読み込み
 
 //=====================================================================================================================
 //          ココからメインプログラム          
@@ -209,7 +211,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//無限ループ
 	while (1)
 	{
-	    
+
 		if (ProcessMessage() != 0) { break; }  //メッセージを受け取り続ける
 		if (ClearDrawScreen() != 0) { break; } //画面をクリア
 
@@ -535,57 +537,62 @@ VOID Title(VOID)
 /// <param name=""></param>
 VOID TitleProc(VOID)
 {
-	//タイトルロゴの降りてくる演出
-	//Max値まで待つ
-	if (TitleLogoCnt < TitleLogo.Y)
-	{
-		TitleLogoCnt += 0.1;
-	}
-	else
-	{
-		
-		TitleLogoBrink = TRUE;
-	}
-
-
-	//タイトルロゴの演出が終わった後に表示
-	if (TitleLogoBrink == TRUE)
+	//メニュー画面が開いていない時限定
+	if (MenuFlag == FALSE)
 	{
 
-		//PushEnterの点滅
-		//MAX値まで待つ
-		if (PushEnterCnt < PushEnterCntMax)
+		//タイトルロゴの降りてくる演出
+		//Max値まで待つ
+		if (TitleLogoCnt < TitleLogo.Y)
 		{
-			PushEnterCnt++;
+			TitleLogoCnt += 0.1;
 		}
 		else
 		{
-			if (PushEnterBrink == TRUE) PushEnterBrink = FALSE;
-			else if (PushEnterBrink == FALSE) PushEnterBrink = TRUE;
 
-			PushEnterCnt = 0;
+			TitleLogoBrink = TRUE;
 		}
 
-	}
 
-	//プレイシーンに切り替え
-	if (KeyClick(KEY_INPUT_RETURN) == TRUE){
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
+		//タイトルロゴの演出が終わった後に表示
+		if (TitleLogoBrink == TRUE)
+		{
 
-		//SE
-		PlaySoundMem(okSE.handle, okSE.playType);
+			//PushEnterの点滅
+			//MAX値まで待つ
+			if (PushEnterCnt < PushEnterCntMax)
+			{
+				PushEnterCnt++;
+			}
+			else
+			{
+				if (PushEnterBrink == TRUE) PushEnterBrink = FALSE;
+				else if (PushEnterBrink == FALSE) PushEnterBrink = TRUE;
 
-		//BGMを止める
-		StopSoundMem(TitleBGM.handle);
+				PushEnterCnt = 0;
+			}
 
-		//ゲームデータの初期化
-		GameInit();
+		}
 
-		//プレイ画面に切り替え
-		ChangeScene(GAME_SCENE_PLAY);
+		//プレイシーンに切り替え
+		if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
+			//シーン切り替え
+			//次のシーンの初期化をココで行うと楽
 
-		return;
+			//SE
+			PlaySoundMem(okSE.handle, okSE.playType);
+
+			//BGMを止める
+			StopSoundMem(TitleBGM.handle);
+
+			//ゲームデータの初期化
+			GameInit();
+
+			//プレイ画面に切り替え
+			ChangeScene(GAME_SCENE_PLAY);
+
+			return;
+		}
 	}
 
 	//BGMが流れていない時
@@ -608,19 +615,16 @@ VOID TitleProc(VOID)
 VOID TitleDraw(VOID)
 {
 	//タイトルロゴの描画
-	
+
 	if (TitleLogoBrink == FALSE)
 	{
 		//半透明にする
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)TitleLogoCnt / TitleLogo.Y) * 255);
-
 		//ロゴを描画
 		DrawGraph(TitleLogo.X, TitleLogoCnt, TitleLogo.handle, TRUE);
-
 		//半透明終了
 		SetDrawBlendMode(DX_BLENDGRAPHTYPE_NORMAL, 0);
 	}
-	
 	//ロゴを描画
 	if (TitleLogoBrink == TRUE)
 	{
@@ -660,6 +664,9 @@ VOID TitleDraw(VOID)
 
 	}
 
+	//フラグが立ったらメニューを表示
+	PrintMenu(TitleBGM.Volume);
+
 	DrawString(0, 0, "タイトル画面", GetColor(0, 0, 0));
 	DrawString(0, 20, "O:音量UP P:音量DOWN", GetColor(0, 0, 0));
 
@@ -689,230 +696,249 @@ VOID Play(VOID)
 /// <param name=""></param>
 VOID PlayProc(VOID)
 {
-
-	//プレイヤーの操作
-	
-		//壁を突き抜けないようにif文を調整
-	if (KeyDown(KEY_INPUT_UP) == TRUE && Player.img.Y > 0)
+	//メニュー画面が開いていない時限定
+	if (MenuFlag == FALSE)
 	{
-		Player.img.Y -= Player.Yspead * fps.DeltaTime;   //上に移動
 
-		//スピード高すぎてめり込むのを防止
-		if (Player.img.Y < 0)
+		//プレイヤーの操作
+
+			//壁を突き抜けないようにif文を調整
+		if (KeyDown(KEY_INPUT_UP) == TRUE && Player.img.Y > 0)
 		{
-			Player.img.Y = 0;
+			Player.img.Y -= Player.Yspead * fps.DeltaTime;   //上に移動
+
+			//スピード高すぎてめり込むのを防止
+			if (Player.img.Y < 0)
+			{
+				Player.img.Y = 0;
+			}
+
+			//効果音
+			if (CheckSoundMem(moveSE.handle) == 0)
+			{
+				PlaySoundMem(moveSE.handle, moveSE.playType);
+			}
 		}
 
-		//効果音
-		if (CheckSoundMem(moveSE.handle) == 0)
+		if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.img.Y < GAME_HEIGHT - Player.img.height)
 		{
-			PlaySoundMem(moveSE.handle, moveSE.playType);
-		}
-	}
+			Player.img.Y += Player.Yspead * fps.DeltaTime;   //下に移動
 
-	if (KeyDown(KEY_INPUT_DOWN) == TRUE && Player.img.Y < GAME_HEIGHT - Player.img.height)
-	{
-		Player.img.Y += Player.Yspead * fps.DeltaTime;   //下に移動
+			//スピード高すぎてめり込むのを防止
+			if (Player.img.Y > GAME_HEIGHT - Player.img.height)
+			{
+				Player.img.Y = GAME_HEIGHT - Player.img.height;
+			}
 
-		//スピード高すぎてめり込むのを防止
-		if (Player.img.Y > GAME_HEIGHT - Player.img.height)
-		{
-			Player.img.Y = GAME_HEIGHT - Player.img.height;
-		}
-
-		//効果音
-		if (CheckSoundMem(moveSE.handle) == 0)
-		{
-			PlaySoundMem(moveSE.handle, moveSE.playType);
-		}
-	}
-
-	if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.img.X > 0)
-	{
-		Player.img.X -= Player.Xspead * fps.DeltaTime;   //左に移動
-
-		//スピード高すぎてめり込むのを防止
-		if (Player.img.X < 0)
-		{
-			Player.img.X = 0;
+			//効果音
+			if (CheckSoundMem(moveSE.handle) == 0)
+			{
+				PlaySoundMem(moveSE.handle, moveSE.playType);
+			}
 		}
 
-		//効果音
-		if (CheckSoundMem(moveSE.handle) == 0)
+		if (KeyDown(KEY_INPUT_LEFT) == TRUE && Player.img.X > 0)
 		{
-			PlaySoundMem(moveSE.handle, moveSE.playType);
+			Player.img.X -= Player.Xspead * fps.DeltaTime;   //左に移動
+
+			//スピード高すぎてめり込むのを防止
+			if (Player.img.X < 0)
+			{
+				Player.img.X = 0;
+			}
+
+			//効果音
+			if (CheckSoundMem(moveSE.handle) == 0)
+			{
+				PlaySoundMem(moveSE.handle, moveSE.playType);
+			}
 		}
-	}
 
-	if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.img.X < GAME_WIDTH - Player.img.width)
-	{
-		Player.img.X += Player.Xspead * fps.DeltaTime;   //右に移動
-
-		//スピード高すぎてめり込むのを防止
-		if (Player.img.X > GAME_WIDTH - Player.img.width)
+		if (KeyDown(KEY_INPUT_RIGHT) == TRUE && Player.img.X < GAME_WIDTH - Player.img.width)
 		{
-			Player.img.X = GAME_WIDTH - Player.img.width;
+			Player.img.X += Player.Xspead * fps.DeltaTime;   //右に移動
+
+			//スピード高すぎてめり込むのを防止
+			if (Player.img.X > GAME_WIDTH - Player.img.width)
+			{
+				Player.img.X = GAME_WIDTH - Player.img.width;
+			}
+
+			//効果音
+			if (CheckSoundMem(moveSE.handle) == 0)
+			{
+				PlaySoundMem(moveSE.handle, moveSE.playType);
+			}
 		}
 
-		//効果音
-		if (CheckSoundMem(moveSE.handle) == 0)
+		//敵の動き
+
+		//敵1
+		Enemy1.img.X += Enemy1.Xspead;
+		if (Enemy1.img.X < 0 || Enemy1.img.X + Enemy1.img.width > GAME_WIDTH)
 		{
-			PlaySoundMem(moveSE.handle, moveSE.playType);
+			Enemy1.Xspead = -Enemy1.Xspead;
 		}
+
+		//敵2
+		Enemy2.img.Y += Enemy2.Yspead;
+		if (Enemy2.img.Y < 0 || Enemy2.img.Y + Enemy2.img.width > GAME_HEIGHT)
+		{
+			Enemy2.Yspead = -Enemy2.Yspead;
+		}
+
+		//敵3
+		Enemy3.img.Y += Enemy3.Yspead;
+		if (Enemy3.img.Y < 0 || Enemy3.img.Y + Enemy3.img.width > GAME_HEIGHT)
+		{
+			Enemy3.Yspead = -Enemy3.Yspead;
+		}
+
+		// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
+		if (KeyDown(KEY_INPUT_1) == TRUE)
+		{
+			Player.Xspead += 5;
+			Player.Yspead += 5;
+		}
+		if (KeyDown(KEY_INPUT_2) == TRUE && Player.Xspead > 0 && Player.Yspead > 0)
+		{
+			Player.Xspead -= 5;
+			Player.Yspead -= 5;
+		}
+
+		//当たり判定を更新
+		CollUpdatePlayer(&Player);
+		CollUpdatePlayer(&Enemy1);
+		CollUpdatePlayer(&Enemy2);
+		CollUpdatePlayer(&Enemy3);
+		CollUpdate(&Goal);
+
+		/*
+		//エンドシーンに切り替え
+		if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
+			//シーン切り替え
+			//次のシーンの初期化をココで行うと楽
+
+			//プレイ画面に切り替え
+			ChangeScene(GAME_SCENE_END);
+		}
+		*/
+
+		//当たり判定のRECT（プレイヤーとゴール）
+		Player.coll = { Player.img.X,Player.img.Y,Player.img.X + Player.img.width,Player.img.Y + Player.img.height };
+		Enemy1.coll = { Enemy1.img.X,Enemy1.img.Y,Enemy1.img.X + Enemy1.img.width,Enemy1.img.Y + Enemy1.img.height };
+		Enemy2.coll = { Enemy2.img.X,Enemy2.img.Y,Enemy2.img.X + Enemy2.img.width,Enemy2.img.Y + Enemy2.img.height };
+		Enemy3.coll = { Enemy3.img.X,Enemy3.img.Y,Enemy3.img.X + Enemy3.img.width,Enemy3.img.Y + Enemy3.img.height };
+		Goal.coll = { Goal.img.X,Goal.img.Y,Goal.img.X + Goal.img.width,Goal.img.Y + Goal.img.height };
+
+		//ゴール判定
+		if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Goal.coll) == TRUE)
+		{
+			//シーン切り替え
+			//次のシーンの初期化をココで行うと楽
+
+			//ゲームクリアの時のフラグを入れる
+			GameEndFlag = GAME_CLEAR;
+
+			//BGMを止める
+			StopSoundMem(PlayBGM.handle);
+
+			//SEが流れていたら止める
+			if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
+
+			//エンド画面に切り替え
+			ChangeScene(GAME_SCENE_END);
+
+			//処理を強制終了
+			return;
+		}
+
+		//ゲームオーバー判定
+		//敵１
+		if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy1.coll) == TRUE)
+		{
+			//シーン切り替え
+			//次のシーンの初期化をココで行うと楽
+
+			//ゲームオーバーの時のフラグを入れる
+			GameEndFlag = GAME_OVER;
+
+			//BGMを止める
+			StopSoundMem(PlayBGM.handle);
+
+			//SEが流れていたら止める
+			if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
+
+			//エンド画面に切り替え
+			ChangeScene(GAME_SCENE_END);
+
+			//処理を強制終了
+			return;
+		}
+		//敵２
+		if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy2.coll) == TRUE)
+		{
+			//シーン切り替え
+			//次のシーンの初期化をココで行うと楽
+
+			//ゲームオーバーの時のフラグを入れる
+			GameEndFlag = GAME_OVER;
+
+			//BGMを止める
+			StopSoundMem(PlayBGM.handle);
+
+			//SEが流れていたら止める
+			if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
+
+			//エンド画面に切り替え
+			ChangeScene(GAME_SCENE_END);
+
+			//処理を強制終了
+			return;
+		}
+		//敵３
+		if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy3.coll) == TRUE)
+		{
+			//シーン切り替え
+			//次のシーンの初期化をココで行うと楽
+
+			//ゲームオーバーの時のフラグを入れる
+			GameEndFlag = GAME_OVER;
+
+			//BGMを止める
+			StopSoundMem(PlayBGM.handle);
+
+			//SEが流れていたら止める
+			if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
+
+			//エンド画面に切り替え
+			ChangeScene(GAME_SCENE_END);
+
+			//処理を強制終了
+			return;
+		}
+
 	}
 
-	//敵の動き
-	
-	//敵1
-	Enemy1.img.X += Enemy1.Xspead;
-	if (Enemy1.img.X < 0 || Enemy1.img.X + Enemy1.img.width > GAME_WIDTH)
-	{
-		Enemy1.Xspead = -Enemy1.Xspead;
-	}
-
-	//敵2
-	Enemy2.img.Y += Enemy2.Yspead;
-	if (Enemy2.img.Y < 0 || Enemy2.img.Y + Enemy2.img.width > GAME_HEIGHT)
-	{
-		Enemy2.Yspead = -Enemy2.Yspead;
-	}
-
-	//敵3
-	Enemy3.img.Y += Enemy3.Yspead;
-	if (Enemy3.img.Y < 0 || Enemy3.img.Y + Enemy3.img.width > GAME_HEIGHT)
-	{
-		Enemy3.Yspead = -Enemy3.Yspead;
-	}
-
-	// １でスピードUP・２でスピードDOWN（0の時はもう下がらない）
-	if (KeyDown(KEY_INPUT_1) == TRUE)
-	{
-		Player.Xspead += 5;
-		Player.Yspead += 5;
-	}
-	if (KeyDown(KEY_INPUT_2) == TRUE && Player.Xspead > 0 && Player.Yspead > 0)
-	{
-		Player.Xspead -= 5;
-		Player.Yspead -= 5;
-	}
-
-	//当たり判定を更新
-	CollUpdatePlayer(&Player);
-	CollUpdatePlayer(&Enemy1);
-	CollUpdatePlayer(&Enemy2);
-	CollUpdatePlayer(&Enemy3);
-	CollUpdate(&Goal);
-
+	//Mキーでメニュー
+	//Mキーを押して上げたらフラグが立つ
 	/*
-	//エンドシーンに切り替え
-	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
-
-		//プレイ画面に切り替え
-		ChangeScene(GAME_SCENE_END);
+	if (KeyClick(KEY_INPUT_M) == TRUE)
+	{
+		MenuKeyFlag = TRUE;
+	}
+	if (KeyClick(KEY_INPUT_M) == FALSE && MenuKeyFlag == TRUE)
+	{
+		MenuKeyFlag = FALSE;
+		MenuFlag = TRUE;
 	}
 	*/
-
-	//当たり判定のRECT（プレイヤーとゴール）
-	Player.coll = { Player.img.X,Player.img.Y,Player.img.X + Player.img.width,Player.img.Y + Player.img.height };
-	Enemy1.coll = { Enemy1.img.X,Enemy1.img.Y,Enemy1.img.X + Enemy1.img.width,Enemy1.img.Y + Enemy1.img.height };
-	Enemy2.coll = { Enemy2.img.X,Enemy2.img.Y,Enemy2.img.X + Enemy2.img.width,Enemy2.img.Y + Enemy2.img.height };
-	Enemy3.coll = { Enemy3.img.X,Enemy3.img.Y,Enemy3.img.X + Enemy3.img.width,Enemy3.img.Y + Enemy3.img.height };
-	Goal.coll = { Goal.img.X,Goal.img.Y,Goal.img.X + Goal.img.width,Goal.img.Y + Goal.img.height };
-
-	//ゴール判定
-	if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Goal.coll) == TRUE)
-	{
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
-
-		//ゲームクリアの時のフラグを入れる
-		GameEndFlag = GAME_CLEAR;
-
-		//BGMを止める
-		StopSoundMem(PlayBGM.handle);
-
-		//SEが流れていたら止める
-		if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
-
-		//エンド画面に切り替え
-		ChangeScene(GAME_SCENE_END);
-
-		//処理を強制終了
-		return;
-	}
-
-	//ゲームオーバー判定
-	//敵１
-	if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy1.coll) == TRUE)
-	{
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
-
-		//ゲームオーバーの時のフラグを入れる
-		GameEndFlag = GAME_OVER;
-
-		//BGMを止める
-		StopSoundMem(PlayBGM.handle);
-
-		//SEが流れていたら止める
-		if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
-
-		//エンド画面に切り替え
-		ChangeScene(GAME_SCENE_END);
-
-		//処理を強制終了
-		return;
-	}
-	//敵２
-	if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy2.coll) == TRUE)
-	{
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
-
-		//ゲームオーバーの時のフラグを入れる
-		GameEndFlag = GAME_OVER;
-
-		//BGMを止める
-		StopSoundMem(PlayBGM.handle);
-
-		//SEが流れていたら止める
-		if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
-
-		//エンド画面に切り替え
-		ChangeScene(GAME_SCENE_END);
-
-		//処理を強制終了
-		return;
-	}
-	//敵３
-	if (Player.img.IsDraw == TRUE && OnCollision(Player.coll, Enemy3.coll) == TRUE)
-	{
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
-
-		//ゲームオーバーの時のフラグを入れる
-		GameEndFlag = GAME_OVER;
-
-		//BGMを止める
-		StopSoundMem(PlayBGM.handle);
-
-		//SEが流れていたら止める
-		if (CheckSoundMem(moveSE.handle)) { StopSoundMem(moveSE.handle); }
-
-		//エンド画面に切り替え
-		ChangeScene(GAME_SCENE_END);
-
-		//処理を強制終了
-		return;
-	}
 
 	//BGMが流れていない時
 	if (CheckSoundMem(PlayBGM.handle) == 0)
 	{
 		//BGMを流す
-		PlaySoundMem(PlayBGM.handle, TitleBGM.playType);
+		PlaySoundMem(PlayBGM.handle, PlayBGM.playType);
 	}
 
 	//音量の変更
@@ -1004,6 +1030,8 @@ VOID PlayDraw(VOID)
 		}
 	}
 
+	PrintMenu(PlayBGM.Volume);
+
 	DrawString(0, 0, "プレイ画面", GetColor(255, 255, 255));
 	DrawString(0, 20, "O:音量UP P:音量DOWN", GetColor(255, 255, 255));
 	DrawString(0, 40, "画面右端までたどり着こう！", GetColor(255, 255, 255));
@@ -1035,21 +1063,29 @@ VOID End(VOID)
 /// <param name=""></param>
 VOID EndProc(VOID)
 {
-	//タイトルシーンに切り替え
-	if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
-		//シーン切り替え
-		//次のシーンの初期化をココで行うと楽
+	//メニュー画面が開いていない時限定
+	if (MenuFlag == FALSE)
+	{
+		//タイトルシーンに切り替え
+		if (KeyClick(KEY_INPUT_RETURN) == TRUE) {
+			//シーン切り替え
+			//次のシーンの初期化をココで行うと楽
 
-		//SE
-		PlaySoundMem(okSE.handle, okSE.playType);
+			//SE
+			PlaySoundMem(okSE.handle, okSE.playType);
 
-		//BGMを止める
-		StopSoundMem(EndBGM.handle);
+			//BGMを止める
+			StopSoundMem(EndBGM.handle);
 
-		//タイトル画面に切り替え
-		ChangeScene(GAME_SCENE_TITLE);
+			//エンド画面のフラグをリセット
 
-		return;
+
+			//タイトル画面に切り替え
+			ChangeScene(GAME_SCENE_TITLE);
+
+			return;
+		}
+
 	}
 
 	//BGMが流れていない時
@@ -1080,7 +1116,7 @@ VOID EndDraw(VOID)
 		//=======================================================
 		//     ゲームクリアの描画     
 		//=======================================================
-		
+
 		//画像を描画
 		DrawGraph(EndClear.X, EndClear.Y, EndClear.handle, TRUE);
 
@@ -1091,7 +1127,7 @@ VOID EndDraw(VOID)
 		//=======================================================
 		//     ゲームオーバーの描画     
 		//=======================================================
-		
+
 		//画像を描画
 		DrawGraph(EndOver.X, EndOver.Y, EndOver.handle, TRUE);
 
@@ -1101,7 +1137,10 @@ VOID EndDraw(VOID)
 	default:
 		break;
 	}
-	
+
+
+	PrintMenu(EndBGM.Volume);
+
 	return;
 }
 
@@ -1110,7 +1149,28 @@ VOID EndDraw(VOID)
 //          ココからメニュー画面          
 //=====================================================================================================================
 
+/// <summary>
+/// メニュー欄の表示
+/// </summary>
+/// <param name="Volum">かかっているBGMの音量</param>
+VOID PrintMenu(int Volum)
+{
+	//Mキーが押されたときフラグを反転させる
+	if (KeyClick(KEY_INPUT_M) == TRUE)
+	{
+		if (MenuFlag == TRUE) MenuFlag = FALSE;
+		else if (MenuFlag == FALSE) MenuFlag = TRUE;
+	}
 
+	//メニューキーが立っているときに描画
+	if (MenuFlag == TRUE)
+	{
+		//外枠を表示
+		DrawBox(1050, 50, 500, 500, GetColor(20, 20, 255), TRUE);
+
+	}
+	return;
+}
 
 
 //=====================================================================================================================
@@ -1259,7 +1319,7 @@ VOID CollUpdate(CHARACTOR* chara)
 /// </summary>
 /// <param name=""></param>
 /// <returns>当たってる・・・TRUE｜当たっていない・・・FALSE</returns>
-BOOL OnCollision(RECT coll1 , RECT coll2)
+BOOL OnCollision(RECT coll1, RECT coll2)
 {
 	//当たっていたらTRUE
 	if (coll1.left < coll2.right &&
